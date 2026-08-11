@@ -56,8 +56,10 @@
   /* ---------- Time-of-day sky band (full-bleed, flat graphics) ---------- */
   .sky {
     position: relative;
-    left: 50%; transform: translateX(-50%);
-    width: 100vw; height: 138px;
+    /* full-bleed, direction-agnostic (works in LTR and RTL) */
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    height: 138px;
     overflow: hidden;
     transition: background .6s ease;
   }
@@ -336,7 +338,7 @@
     <div id="homeView">
     <!-- ===== Quick add ===== -->
     <div class="quickadd">
-      <input id="input" type="text" dir="auto" data-i18n-ph="catchThought" placeholder="Catch a thought… type it here" autocomplete="off" />
+      <input id="input" type="text" data-i18n-ph="catchThought" placeholder="Catch a thought… type it here" autocomplete="off" />
       <button class="add-btn" id="addBtn" title="Add">+</button>
     </div>
 
@@ -429,7 +431,7 @@
       catchThought: 'اكتب اللي في بالك…',
       rightNow: 'الحين',
       noFocus: 'ما اخترت مهمة للتركيز — اضغط ☆ على أي مهمة عشان تجيبها هنا.',
-      done: '✓ خلّصت', focus5: '⏱ ركّز 5 دقايق', clearFocus: 'شيل التركيز',
+      done: '✓ خلّصت', focus5: '⏱ ركّز 5 دقايق', clearFocus: 'انهي التركيز',
       just5: 'بس 5 دقايق. وبس.',
       start: 'ابدأ', pause: 'وقّف', resume: 'كمّل',
       todaysCatch: 'مهام اليوم',
