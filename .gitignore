@@ -33,3 +33,6 @@ out/
 # Temp
 tmp/
 temp/
+
+# Claude Code local settings
+.claude/
