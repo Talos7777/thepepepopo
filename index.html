@@ -387,8 +387,8 @@
 
   <!-- ===== Bottom tab bar ===== -->
   <nav class="tabbar">
-    <button class="tab active" data-view="now">☀ <span>Today</span></button>
-    <button class="tab" data-view="history">🗂 <span>History</span></button>
+    <button class="tab active" data-goto="now">☀ <span>Today</span></button>
+    <button class="tab" data-goto="history">🗂 <span>History</span></button>
     <button class="soundtoggle" id="soundToggle" title="Sound on/off">🔊</button>
   </nav>
 
@@ -505,7 +505,7 @@
 
   function setView(v) {
     document.body.dataset.view = v;
-    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.goto === v));
     render();
   }
   function toggleMute() {
@@ -638,7 +638,7 @@
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { addTask(input.value); input.value = ''; } });
 
   document.body.addEventListener('click', e => {
-    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-view],#focusTimerBtn,#timerToggle,#soundToggle');
+    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-goto],#focusTimerBtn,#timerToggle,#soundToggle');
     if (!el) return;
     const d = el.dataset;
     if (d.toggle) toggle(d.toggle);
@@ -649,7 +649,7 @@
     else if (d.expand) toggleExpand(d.expand);
     else if (d.subtoggle) { const [a,b] = d.subtoggle.split(':'); toggleSub(a,b); }
     else if (d.subdel) { const [a,b] = d.subdel.split(':'); delSub(a,b); }
-    else if (d.view) setView(d.view);
+    else if (d.goto) setView(d.goto);
     else if (el.id === 'focusTimerBtn') $('timer').classList.add('show');
     else if (el.id === 'timerToggle') toggleTimer();
     else if (el.id === 'soundToggle') toggleMute();
