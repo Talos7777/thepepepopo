@@ -256,9 +256,54 @@
 
   .empty-list { text-align: center; color: var(--ink-soft); padding: 28px 0; font-size: 15px; font-weight: 500; }
 
+  /* ---------- Views (Today / History) ---------- */
+  #historyView { display: none; }
+  body[data-view="history"] #homeView { display: none; }
+  body[data-view="history"] #historyView { display: block; }
+
+  .hist-day {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--ink-soft); margin: 16px 4px 8px;
+  }
+  .hist-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--paper); border: 2px solid var(--line);
+    border-radius: 12px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .hist-check { width: 20px; height: 20px; flex-shrink: 0; border-radius: 50%; background: var(--grass); display: grid; place-items: center; }
+  .hist-check svg { width: 11px; height: 11px; stroke: #fff; stroke-width: 4; fill: none; }
+  .hist-text { flex: 1; font-size: 15px; font-weight: 500; color: var(--ink-soft); word-break: break-word; }
+  .hist-item:hover .del { opacity: .55; }
+
+  /* ---------- Bottom tab bar ---------- */
+  .tabbar {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 6px; z-index: 20;
+    background: var(--paper); border: 2.5px solid var(--ink);
+    border-radius: 999px; padding: 6px;
+    box-shadow: 0 5px 0 rgba(58,70,83,.18);
+  }
+  .tab {
+    font-family: var(--font); font-weight: 700; font-size: 14px;
+    border: none; background: transparent; color: var(--ink-soft);
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: background .15s, color .15s;
+  }
+  .tab.active { background: var(--coral); color: #fff; }
+  .soundtoggle {
+    border: none; background: transparent; cursor: pointer;
+    font-size: 17px; width: 38px; height: 38px; border-radius: 50%;
+    display: grid; place-items: center; margin-left: 2px;
+    transition: background .15s, opacity .15s;
+  }
+  .soundtoggle:hover { background: var(--cream); }
+  .soundtoggle.off { opacity: .45; }
+
   /* ---------- Celebrate toast ---------- */
   .toast {
-    position: fixed; left: 50%; bottom: 28px;
+    position: fixed; left: 50%; bottom: 88px;
     transform: translateX(-50%) translateY(120px);
     background: var(--ink); color: var(--paper);
     font-weight: 700; font-size: 15px;
@@ -287,6 +332,7 @@
       <div class="sub">One small thing at a time. 🌻</div>
     </div>
 
+    <div id="homeView">
     <!-- ===== Quick add ===== -->
     <div class="quickadd">
       <input id="input" type="text" dir="auto" placeholder="Catch a thought… type it here" autocomplete="off" />
@@ -322,8 +368,29 @@
     <div class="empty-list" id="emptyList" style="display:none">
       All clear — nothing to catch right now. 🌱
     </div>
+    </div><!-- /homeView -->
 
-  </div>
+    <!-- ===== History ===== -->
+    <div id="historyView">
+      <div class="label">
+        <span class="en">History</span>
+        <span class="jp">きろく</span>
+        <span class="count" id="histCount"></span>
+      </div>
+      <div id="historyList"></div>
+      <div class="empty-list" id="histEmpty">
+        Nothing archived yet — finished tasks move here a week after you complete them. 🗓️
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <!-- ===== Bottom tab bar ===== -->
+  <nav class="tabbar">
+    <button class="tab active" data-view="now">☀ <span>Today</span></button>
+    <button class="tab" data-view="history">🗂 <span>History</span></button>
+    <button class="soundtoggle" id="soundToggle" title="Sound on/off">🔊</button>
+  </nav>
 
   <div class="toast" id="toast">Nice. That's momentum. 🎉</div>
 
@@ -331,6 +398,7 @@
   const CHECK = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
   const PRAISE = ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀","Caught it! 🦋"];
 
+  const WEEK = 7 * 24 * 60 * 60 * 1000;  // done tasks archive to History after this
   let state = load();
   const expanded = new Set();          // which tasks show their steps (UI only)
   const $ = (id) => document.getElementById(id);
@@ -339,11 +407,15 @@
   function load() {
     try {
       const raw = JSON.parse(localStorage.getItem('momentum') || '{}');
-      if (!Array.isArray(raw.tasks)) return { tasks: [], focusId: null };
-      raw.tasks.forEach(t => { if (!Array.isArray(t.subs)) t.subs = []; });
-      return { tasks: raw.tasks, focusId: raw.focusId ?? null };
-    } catch { return { tasks: [], focusId: null }; }
+      if (!Array.isArray(raw.tasks)) return { tasks: [], focusId: null, muted: false };
+      raw.tasks.forEach(t => {
+        if (!Array.isArray(t.subs)) t.subs = [];
+        if (t.done && !t.completedAt) t.completedAt = Date.now();  // start its week now
+      });
+      return { tasks: raw.tasks, focusId: raw.focusId ?? null, muted: !!raw.muted };
+    } catch { return { tasks: [], focusId: null, muted: false }; }
   }
+  function archived(t) { return t.done && t.completedAt && (Date.now() - t.completedAt >= WEEK); }
   function save() { localStorage.setItem('momentum', JSON.stringify(state)); }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function find(id) { return state.tasks.find(t => t.id === id); }
@@ -356,7 +428,8 @@
   function toggle(id) {
     const t = find(id); if (!t) return;
     t.done = !t.done;
-    if (t.done) { if (state.focusId === id) state.focusId = null; celebrate(); }
+    if (t.done) { t.completedAt = Date.now(); if (state.focusId === id) state.focusId = null; celebrate(); }
+    else { t.completedAt = null; }
     save(); render();
   }
   function del(id) {
@@ -390,6 +463,58 @@
     toast.classList.add('show');
     clearTimeout(celebrate._t);
     celebrate._t = setTimeout(() => toast.classList.remove('show'), 1800);
+    chime();
+  }
+
+  // ---- Vaporwave 3-tone chime (Cmaj7 arpeggio: C–E–B), warm + dreamy ----
+  let audioCtx = null;
+  function chime() {
+    if (state.muted) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const ctx = audioCtx, t0 = ctx.currentTime;
+
+      const master = ctx.createGain();
+      master.gain.value = 0.22;
+      master.connect(ctx.destination);
+
+      const lp = ctx.createBiquadFilter();          // warmth
+      lp.type = 'lowpass'; lp.frequency.value = 2000;
+      lp.connect(master);
+
+      const delay = ctx.createDelay();              // vaporwave "space"
+      delay.delayTime.value = 0.19;
+      const fb = ctx.createGain(); fb.gain.value = 0.32;
+      const wet = ctx.createGain(); wet.gain.value = 0.5;
+      delay.connect(fb); fb.connect(delay); delay.connect(master); wet.connect(delay);
+
+      [523.25, 659.25, 987.77].forEach((f, i) => {  // C5, E5, B5
+        const t = t0 + i * 0.13;
+        const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
+        const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = f; o2.detune.value = -7;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.9, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+        o.connect(g); o2.connect(g); g.connect(lp); g.connect(wet);
+        o.start(t); o2.start(t); o.stop(t + 0.65); o2.stop(t + 0.65);
+      });
+    } catch (e) { /* audio not available */ }
+  }
+
+  function setView(v) {
+    document.body.dataset.view = v;
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+    render();
+  }
+  function toggleMute() {
+    state.muted = !state.muted;
+    const b = $('soundToggle');
+    b.textContent = state.muted ? '🔇' : '🔊';
+    b.classList.toggle('off', state.muted);
+    save();
+    if (!state.muted) chime();   // little preview when turning it back on
   }
 
   // ----- subtask checklist markup (used inline + in the focus card) -----
@@ -431,10 +556,11 @@
       resetTimer();
     }
 
-    // ----- List -----
+    // ----- List (active + done-within-the-last-week) -----
     const list = $('list');
     list.innerHTML = '';
-    [...active, ...state.tasks.filter(t => t.done)].forEach(t => {
+    const recentDone = state.tasks.filter(t => t.done && !archived(t));
+    [...active, ...recentDone].forEach(t => {
       const li = document.createElement('li');
       const nSubs = t.subs.length;
       const nDone = t.subs.filter(s => s.done).length;
@@ -459,7 +585,37 @@
     });
 
     $('count').textContent = active.length ? `${active.length} left` : 'all clear ☀';
-    $('emptyList').style.display = state.tasks.length ? 'none' : 'block';
+    const homeTasks = active.length + recentDone.length;
+    $('emptyList').style.display = homeTasks ? 'none' : 'block';
+
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const done = state.tasks.filter(archived).sort((a, b) => b.completedAt - a.completedAt);
+    const hl = $('historyList');
+    hl.innerHTML = '';
+    let lastDay = '';
+    done.forEach(t => {
+      const day = new Date(t.completedAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      if (day !== lastDay) {
+        lastDay = day;
+        const h = document.createElement('div');
+        h.className = 'hist-day';
+        h.textContent = day;
+        hl.appendChild(h);
+      }
+      const row = document.createElement('div');
+      row.className = 'hist-item';
+      row.setAttribute('dir', 'auto');
+      row.innerHTML = `
+        <div class="hist-check">${CHECK}</div>
+        <div class="hist-text">${esc(t.text)}</div>
+        <button class="icon-btn del" data-del="${t.id}" title="Remove">✕</button>`;
+      hl.appendChild(row);
+    });
+    $('histCount').textContent = done.length ? `${done.length} done` : '';
+    $('histEmpty').style.display = done.length ? 'none' : 'block';
   }
 
   function esc(s) { return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -482,7 +638,7 @@
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { addTask(input.value); input.value = ''; } });
 
   document.body.addEventListener('click', e => {
-    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],#focusTimerBtn,#timerToggle');
+    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-view],#focusTimerBtn,#timerToggle,#soundToggle');
     if (!el) return;
     const d = el.dataset;
     if (d.toggle) toggle(d.toggle);
@@ -493,8 +649,10 @@
     else if (d.expand) toggleExpand(d.expand);
     else if (d.subtoggle) { const [a,b] = d.subtoggle.split(':'); toggleSub(a,b); }
     else if (d.subdel) { const [a,b] = d.subdel.split(':'); delSub(a,b); }
+    else if (d.view) setView(d.view);
     else if (el.id === 'focusTimerBtn') $('timer').classList.add('show');
     else if (el.id === 'timerToggle') toggleTimer();
+    else if (el.id === 'soundToggle') toggleMute();
   });
 
   // add a step with Enter (keeps focus in the same field)
@@ -551,8 +709,12 @@
     $('greeting').innerHTML = `${en} <span class="kana">${gjp}</span>`;
   }
 
+  // ---- Init ----
+  document.body.dataset.view = 'now';
+  if (state.muted) { const b = $('soundToggle'); b.textContent = '🔇'; b.classList.add('off'); }
   setSky();
-  setInterval(setSky, 60000);   // keep the sky in sync with the clock
+  setInterval(setSky, 60000);       // keep the sky in sync with the clock
+  setInterval(renderHistory, 60000); // roll finished tasks into History as the week passes
   render();
   input.focus();
 </script>
