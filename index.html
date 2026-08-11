@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
-    /* --- summer / carton palette --- */
     --sky:       #6cbdec;
     --sky-light: #a9e0f7;
     --sky-deep:  #2f8fc9;
@@ -38,13 +37,13 @@
     font-family: var(--font);
     color: var(--ink);
     background-color: var(--cream);
-    /* graph-paper texture, like the carton */
     background-image:
       linear-gradient(var(--line) 1px, transparent 1px),
       linear-gradient(90deg, var(--line) 1px, transparent 1px);
     background-size: 26px 26px;
     min-height: 100vh;
     line-height: 1.5;
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -54,44 +53,50 @@
     padding: 0 16px 90px;
   }
 
-  /* ---------- Summer scene header (the "cover art") ---------- */
-  .scene {
+  /* ---------- Time-of-day sky band (full-bleed, flat graphics) ---------- */
+  .sky {
     position: relative;
-    margin: 0 -16px;
-    line-height: 0;
+    left: 50%; transform: translateX(-50%);
+    width: 100vw; height: 138px;
+    overflow: hidden;
+    transition: background .6s ease;
   }
-  .scene svg { width: 100%; height: auto; display: block; }
+  body[data-time="morning"]   .sky { background: linear-gradient(#8ec9ec, #ffe1c2); }
+  body[data-time="afternoon"] .sky { background: linear-gradient(#4faae4, #bfe7f7); }
+  body[data-time="evening"]   .sky { background: linear-gradient(#6a5a9c 0%, #ff9e6d 65%, #ffd08a 100%); }
+  body[data-time="night"]     .sky { background: linear-gradient(#141d3f, #353f74); }
+  .sky svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .sky-kana {
+    position: absolute; top: 12px; right: 20px;
+    writing-mode: vertical-rl;
+    font-family: var(--font); font-weight: 800;
+    font-size: 24px; letter-spacing: 3px;
+    color: #fff; opacity: .5; user-select: none;
+  }
+  body[data-time="night"] .sky-kana { opacity: .65; }
 
-  /* Title band below the art — like the game cover / carton name band */
+  /* Title band — sticker card that overlaps the sky slightly */
   .band {
+    position: relative; z-index: 1;
     background: var(--paper);
     border: 2.5px solid var(--ink);
-    border-radius: 0 0 var(--radius) var(--radius);
-    margin: -2px 0 26px;
+    border-radius: var(--radius);
+    margin: -20px 0 26px;
     padding: 16px 20px 18px;
     text-align: center;
     box-shadow: 0 5px 0 rgba(58,70,83,.12);
   }
   .tag {
     display: inline-flex; align-items: center; gap: 6px;
-    background: var(--coral);
-    color: #fff;
-    font-family: var(--font);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: .5px;
-    padding: 3px 12px;
-    border-radius: 999px;
+    background: var(--coral); color: #fff;
+    font-weight: 700; font-size: 12px; letter-spacing: .5px;
+    padding: 3px 12px; border-radius: 999px;
     transform: rotate(-1.5deg);
     box-shadow: 0 2px 0 var(--coral-deep);
   }
   .greeting {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 30px;
-    line-height: 1.15;
-    margin: 10px 0 2px;
-    color: var(--ink);
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 30px; line-height: 1.15; margin: 10px 0 2px; color: var(--ink);
   }
   .greeting .kana { color: var(--sky-deep); }
   .sub { color: var(--ink-soft); font-size: 14px; font-weight: 500; }
@@ -125,20 +130,13 @@
   .add-btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
 
   /* ---------- Section labels ---------- */
-  .label {
-    display: flex; align-items: baseline; gap: 8px;
-    margin: 0 4px 12px;
-  }
+  .label { display: flex; align-items: baseline; gap: 8px; margin: 0 4px 12px; }
   .label .en {
     font-family: var(--font-display); font-weight: 700;
-    font-size: 15px; letter-spacing: 1px; text-transform: uppercase;
-    color: var(--ink);
+    font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink);
   }
   .label .jp { font-size: 13px; font-weight: 700; color: var(--coral); }
-  .label .count {
-    margin-left: auto; font-size: 13px; font-weight: 700;
-    color: var(--ink-soft);
-  }
+  .label .count { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
 
   /* ---------- Right Now (hero) ---------- */
   .now-card {
@@ -151,14 +149,10 @@
     margin-bottom: 34px;
     overflow: hidden;
   }
-  /* coral wavy banner along the top, like the milk carton */
   .now-card .wave { position: absolute; top: 0; left: 0; right: 0; height: 14px; display: block; }
-  .now-title {
-    font-family: var(--font-display); font-weight: 600;
-    font-size: 22px; line-height: 1.25; margin: 8px 0 16px;
-  }
+  .now-title { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 8px 0 14px; }
   .now-empty { color: var(--ink-soft); font-size: 15px; text-align: center; padding: 10px 4px; }
-  .now-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .now-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 
   /* ---------- Buttons ---------- */
   .btn {
@@ -176,27 +170,24 @@
   /* ---------- Focus timer ---------- */
   .timer {
     display: none; align-items: center; gap: 12px;
-    margin-top: 18px; padding-top: 16px;
-    border-top: 2px dashed var(--line);
+    margin-top: 18px; padding-top: 16px; border-top: 2px dashed var(--line);
   }
   .timer.show { display: flex; }
-  .timer-time {
-    font-family: var(--font-display); font-weight: 700;
-    font-size: 26px; font-variant-numeric: tabular-nums; color: var(--sky-deep);
-  }
+  .timer-time { font-family: var(--font-display); font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; color: var(--sky-deep); }
   .timer .muted { color: var(--ink-soft); font-size: 13px; font-weight: 500; }
 
-  /* ---------- Task list (kept calm & quiet on purpose) ---------- */
+  /* ---------- Task list ---------- */
   ul { list-style: none; }
   .task {
-    display: flex; align-items: center; gap: 13px;
+    display: flex; flex-direction: column;
     background: var(--paper);
     border: 2px solid var(--line);
     border-radius: 14px;
     padding: 13px 15px; margin-bottom: 10px;
-    transition: border-color .2s, opacity .3s, transform .2s;
+    transition: border-color .2s, opacity .3s;
   }
   .task.focused { border-color: var(--sky); box-shadow: 0 3px 0 rgba(108,189,236,.35); }
+  .task-row { display: flex; align-items: center; gap: 13px; }
   .check {
     width: 25px; height: 25px; flex-shrink: 0;
     border: 2.5px solid var(--ink-soft); border-radius: 50%;
@@ -210,16 +201,58 @@
   .task.done .check svg { opacity: 1; }
   .task.done .task-text { color: var(--ink-soft); text-decoration: line-through; }
   .task-text { flex: 1; font-size: 16px; font-weight: 500; word-break: break-word; }
-  .icon-btn {
-    background: none; border: none; cursor: pointer; padding: 4px;
-    font-size: 17px; line-height: 1; transition: opacity .15s, transform .12s;
+
+  .chip {
+    font-size: 12px; font-weight: 700; color: var(--sky-deep);
+    background: var(--sky-light); border-radius: 999px; padding: 2px 9px; flex-shrink: 0;
   }
+  .icon-btn { background: none; border: none; cursor: pointer; padding: 4px; font-size: 17px; line-height: 1; transition: opacity .15s, transform .12s; }
+  .steps-btn {
+    font-family: var(--font); font-weight: 700; font-size: 12px;
+    color: var(--ink-soft); background: none; border: none; cursor: pointer;
+    padding: 4px 6px; flex-shrink: 0; white-space: nowrap;
+  }
+  .steps-btn:hover { color: var(--coral); }
   .focus-star { color: var(--sun-deep); opacity: .55; }
   .focus-star:hover { opacity: 1; transform: scale(1.2); }
   .task.focused .focus-star { opacity: 1; }
   .del { color: var(--ink-soft); opacity: 0; }
   .task:hover .del { opacity: .55; }
   .del:hover { opacity: 1; }
+
+  /* ---------- Subtasks (the "break it down") ---------- */
+  .subs {
+    margin-top: 12px; margin-left: 11px; padding-left: 16px;
+    border-left: 2px dashed var(--line);
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .sub { display: flex; align-items: center; gap: 10px; }
+  .subcheck {
+    width: 20px; height: 20px; flex-shrink: 0;
+    border: 2.5px solid var(--ink-soft); border-radius: 7px;
+    cursor: pointer; display: grid; place-items: center;
+    transition: background .2s, border-color .2s, transform .12s;
+  }
+  .subcheck:hover { border-color: var(--sky); }
+  .subcheck:active { transform: scale(.85); }
+  .subcheck svg { width: 11px; height: 11px; stroke: #fff; stroke-width: 4; fill: none; opacity: 0; transition: opacity .15s; }
+  .sub.done .subcheck { background: var(--sky); border-color: var(--sky); }
+  .sub.done .subcheck svg { opacity: 1; }
+  .sub.done .subtext { color: var(--ink-soft); text-decoration: line-through; }
+  .subtext { flex: 1; font-size: 14px; font-weight: 500; word-break: break-word; }
+  .subdel { color: var(--ink-soft); opacity: 0; font-size: 14px; }
+  .sub:hover .subdel { opacity: .5; }
+  .subdel:hover { opacity: 1; }
+  .subadd { display: flex; align-items: center; gap: 8px; padding-top: 2px; }
+  .subadd .plus { color: var(--ink-soft); font-size: 16px; font-weight: 700; width: 20px; text-align: center; flex-shrink: 0; }
+  .subadd input {
+    flex: 1; border: none; border-bottom: 2px dashed var(--line);
+    background: transparent; color: var(--ink);
+    font-family: var(--font); font-size: 14px; font-weight: 500;
+    padding: 3px 0; outline: none;
+  }
+  .subadd input::placeholder { color: var(--ink-soft); }
+  .subadd input:focus { border-bottom-color: var(--sky); }
 
   .empty-list { text-align: center; color: var(--ink-soft); padding: 28px 0; font-size: 15px; font-weight: 500; }
 
@@ -241,47 +274,15 @@
 <body>
   <div class="app">
 
-    <!-- ===== Cover art: a classic sky ===== -->
-    <div class="scene" aria-hidden="true">
-      <svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#5cb2e6"/>
-            <stop offset="1" stop-color="#bfe7f7"/>
-          </linearGradient>
-          <clipPath id="round"><rect x="0" y="0" width="640" height="150" rx="20" ry="20"/></clipPath>
-        </defs>
-
-        <g clip-path="url(#round)">
-          <!-- sky -->
-          <rect x="0" y="0" width="640" height="150" fill="url(#sky)"/>
-
-          <!-- soft classic clouds -->
-          <g fill="#ffffff">
-            <g opacity=".98">
-              <ellipse cx="150" cy="60" rx="58" ry="30"/>
-              <ellipse cx="108" cy="74" rx="40" ry="24"/>
-              <ellipse cx="196" cy="76" rx="44" ry="22"/>
-              <rect x="104" y="68" width="96" height="24" rx="12"/>
-            </g>
-            <g opacity=".92">
-              <ellipse cx="440" cy="40" rx="50" ry="27"/>
-              <ellipse cx="480" cy="52" rx="38" ry="22"/>
-              <ellipse cx="406" cy="54" rx="32" ry="19"/>
-            </g>
-            <g opacity=".82">
-              <ellipse cx="560" cy="104" rx="52" ry="26"/>
-              <ellipse cx="606" cy="112" rx="36" ry="19"/>
-              <ellipse cx="516" cy="114" rx="30" ry="16"/>
-            </g>
-          </g>
-        </g>
-      </svg>
+    <!-- ===== Time-of-day sky ===== -->
+    <div class="sky" aria-hidden="true">
+      <svg id="skyArt" viewBox="0 0 1200 138" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"></svg>
+      <div class="sky-kana" id="skyKana"></div>
     </div>
 
     <!-- ===== Title band ===== -->
     <div class="band">
-      <span class="tag">☀ なつやすみ気分 · take it easy</span>
+      <span class="tag">☀ <span id="tagJp">なつやすみ気分</span> · take it easy</span>
       <div class="greeting" id="greeting">Good afternoon.</div>
       <div class="sub">One small thing at a time. 🌻</div>
     </div>
@@ -327,31 +328,33 @@
   <div class="toast" id="toast">Nice. That's momentum. 🎉</div>
 
 <script>
-  const CHECK_SVG = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
+  const CHECK = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
   const PRAISE = ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀","Caught it! 🦋"];
 
   let state = load();
+  const expanded = new Set();          // which tasks show their steps (UI only)
   const $ = (id) => document.getElementById(id);
   const input = $('input');
 
   function load() {
     try {
       const raw = JSON.parse(localStorage.getItem('momentum') || '{}');
-      return Array.isArray(raw.tasks) ? { tasks: raw.tasks, focusId: raw.focusId ?? null } : { tasks: [], focusId: null };
+      if (!Array.isArray(raw.tasks)) return { tasks: [], focusId: null };
+      raw.tasks.forEach(t => { if (!Array.isArray(t.subs)) t.subs = []; });
+      return { tasks: raw.tasks, focusId: raw.focusId ?? null };
     } catch { return { tasks: [], focusId: null }; }
   }
   function save() { localStorage.setItem('momentum', JSON.stringify(state)); }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function find(id) { return state.tasks.find(t => t.id === id); }
 
   function addTask(text) {
-    text = text.trim();
-    if (!text) return;
-    state.tasks.unshift({ id: uid(), text, done: false });
+    text = text.trim(); if (!text) return;
+    state.tasks.unshift({ id: uid(), text, done: false, subs: [] });
     save(); render();
   }
   function toggle(id) {
-    const t = state.tasks.find(t => t.id === id);
-    if (!t) return;
+    const t = find(id); if (!t) return;
     t.done = !t.done;
     if (t.done) { if (state.focusId === id) state.focusId = null; celebrate(); }
     save(); render();
@@ -361,9 +364,24 @@
     if (state.focusId === id) state.focusId = null;
     save(); render();
   }
-  function setFocus(id) {
-    state.focusId = state.focusId === id ? null : id;
+  function setFocus(id) { state.focusId = state.focusId === id ? null : id; save(); render(); }
+  function toggleExpand(id) { expanded.has(id) ? expanded.delete(id) : expanded.add(id); render(); }
+
+  function addSub(taskId, text) {
+    text = text.trim(); if (!text) return;
+    const t = find(taskId); if (!t) return;
+    t.subs.push({ id: uid(), text, done: false });
+    expanded.add(taskId);
     save(); render();
+  }
+  function toggleSub(taskId, subId) {
+    const t = find(taskId); if (!t) return;
+    const s = t.subs.find(s => s.id === subId); if (!s) return;
+    s.done = !s.done; save(); render();
+  }
+  function delSub(taskId, subId) {
+    const t = find(taskId); if (!t) return;
+    t.subs = t.subs.filter(s => s.id !== subId); save(); render();
   }
 
   function celebrate() {
@@ -374,14 +392,32 @@
     celebrate._t = setTimeout(() => toast.classList.remove('show'), 1800);
   }
 
+  // ----- subtask checklist markup (used inline + in the focus card) -----
+  function subsHTML(t, focusVal) {
+    const rows = t.subs.map(s => `
+      <div class="sub ${s.done ? 'done' : ''}">
+        <div class="subcheck" data-subtoggle="${t.id}:${s.id}">${CHECK}</div>
+        <div class="subtext">${esc(s.text)}</div>
+        <button class="icon-btn subdel" data-subdel="${t.id}:${s.id}" title="Remove step">✕</button>
+      </div>`).join('');
+    return `<div class="subs">${rows}
+      <div class="subadd">
+        <span class="plus">+</span>
+        <input type="text" data-subadd="${t.id}" placeholder="add a small step…" autocomplete="off" ${focusVal ? 'data-focusme="1"' : ''} />
+      </div>
+    </div>`;
+  }
+
   function render() {
     const active = state.tasks.filter(t => !t.done);
     const focus = state.tasks.find(t => t.id === state.focusId && !t.done);
 
+    // ----- Right Now -----
     const nc = $('nowContent');
     if (focus) {
       nc.innerHTML = `
         <div class="now-title">${esc(focus.text)}</div>
+        ${subsHTML(focus, false)}
         <div class="now-actions">
           <button class="btn primary" data-done="${focus.id}">✓ Done</button>
           <button class="btn" id="focusTimerBtn">⏱ Focus 5 min</button>
@@ -393,17 +429,30 @@
       resetTimer();
     }
 
+    // ----- List -----
     const list = $('list');
     list.innerHTML = '';
-    const ordered = [...active, ...state.tasks.filter(t => t.done)];
-    ordered.forEach(t => {
+    [...active, ...state.tasks.filter(t => t.done)].forEach(t => {
       const li = document.createElement('li');
+      const nSubs = t.subs.length;
+      const nDone = t.subs.filter(s => s.done).length;
+      const isOpen = expanded.has(t.id);
+      const stepsBtn = t.done ? '' : (
+        nSubs
+          ? `<span class="chip">${nDone}/${nSubs}</span>
+             <button class="steps-btn" data-expand="${t.id}">${isOpen ? '▾ hide' : '▸ steps'}</button>`
+          : `<button class="steps-btn" data-expand="${t.id}">＋ break it down</button>`
+      );
       li.className = 'task' + (t.done ? ' done' : '') + (t.id === state.focusId ? ' focused' : '');
       li.innerHTML = `
-        <div class="check" data-toggle="${t.id}">${CHECK_SVG}</div>
-        <div class="task-text">${esc(t.text)}</div>
-        ${t.done ? '' : `<button class="icon-btn focus-star" data-focus="${t.id}" title="Focus on this">${t.id === state.focusId ? '★' : '☆'}</button>`}
-        <button class="icon-btn del" data-del="${t.id}" title="Remove">✕</button>`;
+        <div class="task-row">
+          <div class="check" data-toggle="${t.id}">${CHECK}</div>
+          <div class="task-text">${esc(t.text)}</div>
+          ${stepsBtn}
+          ${t.done ? '' : `<button class="icon-btn focus-star" data-focus="${t.id}" title="Focus on this">${t.id === state.focusId ? '★' : '☆'}</button>`}
+          <button class="icon-btn del" data-del="${t.id}" title="Remove">✕</button>
+        </div>
+        ${(!t.done && isOpen) ? subsHTML(t, false) : ''}`;
       list.appendChild(li);
     });
 
@@ -431,26 +480,76 @@
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { addTask(input.value); input.value = ''; } });
 
   document.body.addEventListener('click', e => {
-    const t = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],#focusTimerBtn,#timerToggle');
-    if (!t) return;
-    if (t.dataset.toggle) toggle(t.dataset.toggle);
-    else if (t.dataset.del) del(t.dataset.del);
-    else if (t.dataset.focus) setFocus(t.dataset.focus);
-    else if (t.dataset.done) toggle(t.dataset.done);
-    else if (t.dataset.unfocus) setFocus(state.focusId);
-    else if (t.id === 'focusTimerBtn') { $('timer').classList.add('show'); }
-    else if (t.id === 'timerToggle') toggleTimer();
+    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],#focusTimerBtn,#timerToggle');
+    if (!el) return;
+    const d = el.dataset;
+    if (d.toggle) toggle(d.toggle);
+    else if (d.del) del(d.del);
+    else if (d.focus) setFocus(d.focus);
+    else if (d.done) toggle(d.done);
+    else if (d.unfocus) setFocus(state.focusId);
+    else if (d.expand) toggleExpand(d.expand);
+    else if (d.subtoggle) { const [a,b] = d.subtoggle.split(':'); toggleSub(a,b); }
+    else if (d.subdel) { const [a,b] = d.subdel.split(':'); delSub(a,b); }
+    else if (el.id === 'focusTimerBtn') $('timer').classList.add('show');
+    else if (el.id === 'timerToggle') toggleTimer();
   });
 
-  // Greeting by time of day (with a little kana accent)
-  (function () {
-    const h = new Date().getHours();
-    let en = 'Good evening.', jp = 'こんばんは';
-    if (h < 12) { en = 'Good morning.'; jp = 'おはよう'; }
-    else if (h < 18) { en = 'Good afternoon.'; jp = 'こんにちは'; }
-    $('greeting').innerHTML = `${en} <span class="kana">${jp}</span>`;
-  })();
+  // add a step with Enter (keeps focus in the same field)
+  document.body.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const inp = e.target.closest('[data-subadd]');
+    if (!inp) return;
+    const taskId = inp.dataset.subadd;
+    addSub(taskId, inp.value);
+    const again = document.querySelector(`[data-subadd="${taskId}"]`);
+    if (again) again.focus();
+  });
 
+  // ---------- Time-of-day sky ----------
+  function cloud(x, y, s, fill, op) {
+    return `<g transform="translate(${x},${y}) scale(${s})" fill="${fill}" opacity="${op}">
+      <ellipse cx="0" cy="0" rx="58" ry="30"/>
+      <ellipse cx="-44" cy="14" rx="40" ry="24"/>
+      <ellipse cx="48" cy="16" rx="44" ry="22"/>
+      <rect x="-46" y="6" width="98" height="26" rx="13"/></g>`;
+  }
+  function sun(x, y, r, fill, halo) {
+    return `<circle cx="${x}" cy="${y}" r="${r*1.45}" fill="${halo}" opacity=".4"/><circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"/>`;
+  }
+  function star(x, y, s) {
+    return `<path transform="translate(${x},${y}) scale(${s})" d="M0,-7 L2,-2 7,0 2,2 0,7 -2,2 -7,0 -2,-2 Z" fill="#fef6d8"/>`;
+  }
+
+  function setSky() {
+    const h = new Date().getHours();
+    let time, art, kana, en, gjp, tag;
+
+    if (h < 5 || h >= 20) {
+      time = 'night';  kana = 'よる';  en = 'Winding down.'; gjp = 'こんばんは'; tag = 'よふかし注意';
+      const moon = `<defs><mask id="m"><rect width="1200" height="138" fill="#fff"/><circle cx="175" cy="46" r="30" fill="#000"/></mask></defs>
+        <circle cx="150" cy="54" r="33" fill="#fdf3d0" mask="url(#m)"/>`;
+      art = moon + star(430,44,1.1) + star(560,78,.8) + star(690,40,1.3) + star(820,66,.9) + star(960,36,1) + star(1080,80,1.1)
+          + cloud(1120, 108, 1, '#2b356a', .8);
+    } else if (h < 11) {
+      time = 'morning'; kana = 'あさ'; en = 'Good morning.'; gjp = 'おはよう'; tag = 'あさのきぶん';
+      art = sun(150, 96, 40, '#ffcf6a', '#fff0c0') + cloud(560, 52, 1, '#ffffff', .96) + cloud(1080, 96, .9, '#ffffff', .85);
+    } else if (h < 17) {
+      time = 'afternoon'; kana = 'はれ'; en = 'Good afternoon.'; gjp = 'こんにちは'; tag = 'なつやすみ気分';
+      art = sun(140, 58, 40, '#ffd451', '#ffe89a') + cloud(540, 48, 1, '#ffffff', .97) + cloud(950, 92, 1, '#ffffff', .9) + cloud(1160, 40, .8, '#ffffff', .85);
+    } else {
+      time = 'evening'; kana = 'ゆうがた'; en = 'Good evening.'; gjp = 'こんばんは'; tag = 'ゆうやけ小やけ';
+      art = sun(1030, 96, 46, '#ff7e4d', '#ffb27a') + cloud(300, 52, 1, '#ffe0c4', .95) + cloud(720, 90, .9, '#f7cdb2', .8);
+    }
+
+    document.body.dataset.time = time;
+    $('skyArt').innerHTML = art;
+    $('skyKana').textContent = kana;
+    $('tagJp').textContent = tag;
+    $('greeting').innerHTML = `${en} <span class="kana">${gjp}</span>`;
+  }
+
+  setSky();
   render();
   input.focus();
 </script>
