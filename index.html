@@ -3,221 +3,354 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Momentum — one thing at a time</title>
+<title>Summer To-Dos — one thing at a time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #f6f7f9;
-    --surface: #ffffff;
-    --text: #1f2430;
-    --muted: #8a91a0;
-    --line: #e9ebef;
-    --accent: #6c8cff;
-    --accent-soft: #eef2ff;
-    --done: #37c98b;
-    --radius: 18px;
-    --shadow: 0 1px 2px rgba(20,24,40,.04), 0 8px 24px rgba(20,24,40,.06);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #14161c;
-      --surface: #1c1f27;
-      --text: #eceef2;
-      --muted: #868da0;
-      --line: #2a2e39;
-      --accent: #7f9bff;
-      --accent-soft: #232838;
-      --done: #3ad39a;
-      --shadow: 0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.35);
-    }
+    /* --- summer / carton palette --- */
+    --sky:       #6cbdec;
+    --sky-light: #a9e0f7;
+    --sky-deep:  #2f8fc9;
+    --cream:     #fbf3e0;
+    --paper:     #fffdf6;
+    --ink:       #3a4653;
+    --ink-soft:  #7f8b97;
+    --coral:     #ef5b43;
+    --coral-deep:#d33f2b;
+    --sun:       #f8c53c;
+    --sun-deep:  #e9a400;
+    --grass:     #7cb84e;
+    --grass-deep:#5e9c37;
+    --peach:     #f4a98a;
+    --line:      #eadfc4;
+
+    --radius: 20px;
+    --font-display: 'Fredoka', 'M PLUS Rounded 1c', sans-serif;
+    --font: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color-scheme: light;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    background: var(--bg);
-    color: var(--text);
+    font-family: var(--font);
+    color: var(--ink);
+    background-color: var(--cream);
+    /* graph-paper texture, like the carton */
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 26px 26px;
     min-height: 100vh;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-  .wrap {
-    max-width: 620px;
+
+  .app {
+    max-width: 640px;
     margin: 0 auto;
-    padding: 32px 20px 80px;
+    padding: 0 16px 90px;
   }
 
-  /* Header */
-  header { text-align: center; margin-bottom: 28px; }
-  .logo { font-size: 15px; font-weight: 700; letter-spacing: .3px; color: var(--muted); }
-  .greeting { font-size: 26px; font-weight: 700; margin-top: 6px; }
-  .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
+  /* ---------- Summer scene header (the "cover art") ---------- */
+  .scene {
+    position: relative;
+    margin: 0 -16px;
+    line-height: 0;
+  }
+  .scene svg { width: 100%; height: auto; display: block; }
 
-  /* Quick add */
+  /* Title band below the art — like the game cover / carton name band */
+  .band {
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin: -2px 0 26px;
+    padding: 16px 20px 18px;
+    text-align: center;
+    box-shadow: 0 5px 0 rgba(58,70,83,.12);
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--coral);
+    color: #fff;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: .5px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    transform: rotate(-1.5deg);
+    box-shadow: 0 2px 0 var(--coral-deep);
+  }
+  .greeting {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.15;
+    margin: 10px 0 2px;
+    color: var(--ink);
+  }
+  .greeting .kana { color: var(--sky-deep); }
+  .sub { color: var(--ink-soft); font-size: 14px; font-weight: 500; }
+
+  /* ---------- Quick add ---------- */
   .quickadd {
-    display: flex;
-    gap: 8px;
-    background: var(--surface);
-    border: 1px solid var(--line);
+    display: flex; gap: 10px; align-items: center;
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
     border-radius: var(--radius);
-    padding: 8px 8px 8px 18px;
-    box-shadow: var(--shadow);
-    margin-bottom: 26px;
-    align-items: center;
+    padding: 9px 9px 9px 18px;
+    box-shadow: 0 4px 0 rgba(58,70,83,.14);
+    margin-bottom: 30px;
   }
   .quickadd input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    font-size: 16px;
-    outline: none;
+    flex: 1; border: none; background: transparent;
+    color: var(--ink); font-family: var(--font);
+    font-size: 16px; font-weight: 500; outline: none;
   }
-  .quickadd input::placeholder { color: var(--muted); }
+  .quickadd input::placeholder { color: var(--ink-soft); }
   .add-btn {
-    border: none;
-    background: var(--accent);
-    color: #fff;
-    width: 40px; height: 40px;
-    border-radius: 12px;
-    font-size: 22px;
-    cursor: pointer;
-    display: grid; place-items: center;
-    transition: transform .12s ease, opacity .2s;
     flex-shrink: 0;
+    border: 2.5px solid var(--ink);
+    background: var(--coral); color: #fff;
+    width: 44px; height: 44px; border-radius: 14px;
+    font-size: 26px; font-weight: 700; cursor: pointer;
+    display: grid; place-items: center;
+    box-shadow: 0 3px 0 var(--ink);
+    transition: transform .1s, box-shadow .1s;
   }
-  .add-btn:active { transform: scale(.9); }
+  .add-btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
 
-  /* Right Now zone */
-  .now-label {
-    font-size: 12px; font-weight: 700; letter-spacing: 1px;
-    text-transform: uppercase; color: var(--muted);
-    margin: 0 4px 10px;
+  /* ---------- Section labels ---------- */
+  .label {
+    display: flex; align-items: baseline; gap: 8px;
+    margin: 0 4px 12px;
   }
+  .label .en {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 15px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--ink);
+  }
+  .label .jp { font-size: 13px; font-weight: 700; color: var(--coral); }
+  .label .count {
+    margin-left: auto; font-size: 13px; font-weight: 700;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Right Now (hero) ---------- */
   .now-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 24px 22px;
-    box-shadow: var(--shadow);
-    margin-bottom: 30px;
     position: relative;
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
+    border-radius: var(--radius);
+    padding: 26px 22px 22px;
+    box-shadow: 0 5px 0 rgba(58,70,83,.14);
+    margin-bottom: 34px;
     overflow: hidden;
   }
-  .now-card::before {
-    content: "";
-    position: absolute; left: 0; top: 0; bottom: 0;
-    width: 4px; background: var(--accent);
+  /* coral wavy banner along the top, like the milk carton */
+  .now-card .wave { position: absolute; top: 0; left: 0; right: 0; height: 14px; display: block; }
+  .now-title {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 22px; line-height: 1.25; margin: 8px 0 16px;
   }
-  .now-title { font-size: 20px; font-weight: 600; margin-bottom: 14px; }
-  .now-empty { color: var(--muted); font-size: 16px; text-align: center; padding: 8px 0; }
+  .now-empty { color: var(--ink-soft); font-size: 15px; text-align: center; padding: 10px 4px; }
   .now-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-  .btn {
-    border: 1px solid var(--line);
-    background: transparent;
-    color: var(--text);
-    padding: 9px 16px;
-    border-radius: 12px;
-    font-size: 14px; font-weight: 600;
-    cursor: pointer;
-    transition: background .15s, border-color .15s;
-  }
-  .btn:hover { background: var(--accent-soft); }
-  .btn.primary { background: var(--done); border-color: var(--done); color: #fff; }
-  .btn.primary:hover { opacity: .92; }
 
-  /* Timer */
+  /* ---------- Buttons ---------- */
+  .btn {
+    font-family: var(--font); font-weight: 700; font-size: 14px;
+    border: 2.5px solid var(--ink);
+    background: var(--paper); color: var(--ink);
+    padding: 9px 16px; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 3px 0 var(--ink);
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+  .btn.primary { background: var(--grass); color: #fff; }
+  #focusTimerBtn { background: var(--sky); color: #fff; }
+
+  /* ---------- Focus timer ---------- */
   .timer {
-    display: none;
-    align-items: center; gap: 12px;
-    margin-top: 16px; padding-top: 16px;
-    border-top: 1px dashed var(--line);
+    display: none; align-items: center; gap: 12px;
+    margin-top: 18px; padding-top: 16px;
+    border-top: 2px dashed var(--line);
   }
   .timer.show { display: flex; }
-  .timer-time { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .timer .muted { color: var(--muted); font-size: 13px; }
-
-  /* List */
-  .list-label {
-    font-size: 12px; font-weight: 700; letter-spacing: 1px;
-    text-transform: uppercase; color: var(--muted);
-    margin: 0 4px 12px;
-    display: flex; justify-content: space-between; align-items: center;
+  .timer-time {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 26px; font-variant-numeric: tabular-nums; color: var(--sky-deep);
   }
-  .count { font-weight: 600; letter-spacing: 0; text-transform: none; }
+  .timer .muted { color: var(--ink-soft); font-size: 13px; font-weight: 500; }
+
+  /* ---------- Task list (kept calm & quiet on purpose) ---------- */
   ul { list-style: none; }
   .task {
-    display: flex; align-items: center; gap: 14px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    box-shadow: var(--shadow);
-    transition: opacity .3s, transform .3s;
-  }
-  .task.focused { border-color: var(--accent); }
-  .check {
-    width: 24px; height: 24px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 13px;
+    background: var(--paper);
     border: 2px solid var(--line);
-    border-radius: 50%;
-    cursor: pointer;
-    display: grid; place-items: center;
-    transition: background .2s, border-color .2s, transform .15s;
+    border-radius: 14px;
+    padding: 13px 15px; margin-bottom: 10px;
+    transition: border-color .2s, opacity .3s, transform .2s;
   }
-  .check:hover { border-color: var(--done); }
+  .task.focused { border-color: var(--sky); box-shadow: 0 3px 0 rgba(108,189,236,.35); }
+  .check {
+    width: 25px; height: 25px; flex-shrink: 0;
+    border: 2.5px solid var(--ink-soft); border-radius: 50%;
+    cursor: pointer; display: grid; place-items: center;
+    transition: background .2s, border-color .2s, transform .12s;
+  }
+  .check:hover { border-color: var(--grass); }
+  .check:active { transform: scale(.88); }
   .check svg { width: 13px; height: 13px; stroke: #fff; stroke-width: 3.5; fill: none; opacity: 0; transition: opacity .15s; }
-  .task.done .check { background: var(--done); border-color: var(--done); }
+  .task.done .check { background: var(--grass); border-color: var(--grass); }
   .task.done .check svg { opacity: 1; }
-  .task.done .task-text { color: var(--muted); text-decoration: line-through; }
-  .task-text { flex: 1; font-size: 16px; word-break: break-word; }
-  .task-meta { color: var(--muted); font-size: 12px; }
-  .focus-star {
-    background: none; border: none; cursor: pointer;
-    font-size: 17px; color: var(--muted); opacity: .5;
-    transition: opacity .15s, transform .15s; padding: 4px;
+  .task.done .task-text { color: var(--ink-soft); text-decoration: line-through; }
+  .task-text { flex: 1; font-size: 16px; font-weight: 500; word-break: break-word; }
+  .icon-btn {
+    background: none; border: none; cursor: pointer; padding: 4px;
+    font-size: 17px; line-height: 1; transition: opacity .15s, transform .12s;
   }
-  .focus-star:hover { opacity: 1; transform: scale(1.15); }
-  .task.focused .focus-star { opacity: 1; color: var(--accent); }
-  .del {
-    background: none; border: none; cursor: pointer;
-    font-size: 16px; color: var(--muted); opacity: 0;
-    transition: opacity .15s; padding: 4px;
-  }
-  .task:hover .del { opacity: .5; }
+  .focus-star { color: var(--sun-deep); opacity: .55; }
+  .focus-star:hover { opacity: 1; transform: scale(1.2); }
+  .task.focused .focus-star { opacity: 1; }
+  .del { color: var(--ink-soft); opacity: 0; }
+  .task:hover .del { opacity: .55; }
   .del:hover { opacity: 1; }
 
-  .empty-list { text-align: center; color: var(--muted); padding: 30px 0; font-size: 15px; }
+  .empty-list { text-align: center; color: var(--ink-soft); padding: 28px 0; font-size: 15px; font-weight: 500; }
 
-  /* Celebrate toast */
+  /* ---------- Celebrate toast ---------- */
   .toast {
-    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(100px);
-    background: var(--text); color: var(--bg);
-    padding: 12px 22px; border-radius: 999px;
-    font-size: 15px; font-weight: 600;
-    box-shadow: var(--shadow);
-    opacity: 0; transition: transform .35s cubic-bezier(.2,.9,.3,1.2), opacity .35s;
-    pointer-events: none;
+    position: fixed; left: 50%; bottom: 28px;
+    transform: translateX(-50%) translateY(120px);
+    background: var(--ink); color: var(--paper);
+    font-weight: 700; font-size: 15px;
+    padding: 12px 24px; border-radius: 999px;
+    border: 2.5px solid var(--ink);
+    box-shadow: 0 4px 0 rgba(58,70,83,.25);
+    opacity: 0; pointer-events: none;
+    transition: transform .35s cubic-bezier(.2,.9,.3,1.3), opacity .3s;
   }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo">◆ MOMENTUM</div>
-      <div class="greeting" id="greeting">Let's get one thing done.</div>
-      <div class="sub">Small steps count. Pick one and start.</div>
-    </header>
+  <div class="app">
 
+    <!-- ===== Cover art: summer scene ===== -->
+    <div class="scene" aria-hidden="true">
+      <svg viewBox="0 0 640 236" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#5cb2e6"/>
+            <stop offset="1" stop-color="#bfe7f7"/>
+          </linearGradient>
+          <clipPath id="round"><rect x="0" y="0" width="640" height="236" rx="20" ry="20"/></clipPath>
+        </defs>
+
+        <g clip-path="url(#round)">
+          <!-- sky -->
+          <rect x="0" y="0" width="640" height="236" fill="url(#sky)"/>
+
+          <!-- sun -->
+          <circle cx="86" cy="66" r="46" fill="#ffe07a" opacity=".55"/>
+          <circle cx="86" cy="66" r="32" fill="#fdd451"/>
+
+          <!-- clouds -->
+          <g fill="#ffffff">
+            <g opacity=".97">
+              <ellipse cx="250" cy="72" rx="60" ry="34"/>
+              <ellipse cx="205" cy="86" rx="42" ry="28"/>
+              <ellipse cx="300" cy="88" rx="46" ry="26"/>
+              <rect x="200" y="80" width="105" height="26" rx="13"/>
+            </g>
+            <g opacity=".9">
+              <ellipse cx="470" cy="50" rx="52" ry="30"/>
+              <ellipse cx="512" cy="64" rx="40" ry="24"/>
+              <ellipse cx="435" cy="66" rx="34" ry="20"/>
+            </g>
+            <g opacity=".8">
+              <ellipse cx="560" cy="120" rx="46" ry="24"/>
+              <ellipse cx="600" cy="128" rx="34" ry="18"/>
+            </g>
+          </g>
+
+          <!-- back hill -->
+          <path d="M0,200 C120,150 260,160 380,178 C500,196 580,182 640,168 L640,236 L0,236 Z" fill="#8fc65a"/>
+          <!-- front hill -->
+          <path d="M0,236 L0,214 C130,190 300,206 430,214 C520,220 590,210 640,204 L640,236 Z" fill="#77b344"/>
+          <!-- little trail -->
+          <path d="M300,236 C320,220 322,214 350,206 C372,200 386,202 402,206" stroke="#eadfb8" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+          <!-- sunflowers (bottom-right, like the game cover) -->
+          <g>
+            <g transform="translate(540,196)">
+              <rect x="-2" y="0" width="4" height="34" fill="#4f8a2e"/>
+              <g fill="#f8c53c"><circle cx="0" cy="-4" r="4"/><circle cx="9" cy="0" r="4"/><circle cx="7" cy="9" r="4"/><circle cx="-7" cy="9" r="4"/><circle cx="-9" cy="0" r="4"/><circle cx="6" cy="-9" r="4"/><circle cx="-6" cy="-9" r="4"/></g>
+              <circle cx="0" cy="0" r="6" fill="#7a4a1e"/>
+            </g>
+            <g transform="translate(578,204)">
+              <rect x="-2" y="0" width="4" height="30" fill="#4f8a2e"/>
+              <g fill="#f8c53c"><circle cx="0" cy="-4" r="3.6"/><circle cx="8" cy="0" r="3.6"/><circle cx="6" cy="8" r="3.6"/><circle cx="-6" cy="8" r="3.6"/><circle cx="-8" cy="0" r="3.6"/><circle cx="5" cy="-8" r="3.6"/><circle cx="-5" cy="-8" r="3.6"/></g>
+              <circle cx="0" cy="0" r="5.5" fill="#7a4a1e"/>
+            </g>
+            <g transform="translate(610,198)">
+              <rect x="-2" y="0" width="4" height="36" fill="#4f8a2e"/>
+              <g fill="#f8c53c"><circle cx="0" cy="-4" r="4"/><circle cx="9" cy="0" r="4"/><circle cx="7" cy="9" r="4"/><circle cx="-7" cy="9" r="4"/><circle cx="-9" cy="0" r="4"/><circle cx="6" cy="-9" r="4"/><circle cx="-6" cy="-9" r="4"/></g>
+              <circle cx="0" cy="0" r="6" fill="#7a4a1e"/>
+            </g>
+          </g>
+
+          <!-- kid with a bug net, mid-run -->
+          <g transform="translate(360,150)">
+            <!-- net pole + hoop -->
+            <line x1="18" y1="6" x2="44" y2="-26" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="49" cy="-32" r="11" fill="none" stroke="#ffffff" stroke-width="3"/>
+            <!-- little bug -->
+            <circle cx="70" cy="-44" r="3" fill="#3a4653"/>
+            <!-- body -->
+            <path d="M2,2 q6,-14 14,-12 q7,2 5,12 l-3,10 -12,0 z" fill="#f6c944"/>
+            <!-- head -->
+            <circle cx="9" cy="-14" r="7" fill="#f4c9a3"/>
+            <path d="M2,-16 q7,-8 14,0" fill="#4a3524"/>
+            <!-- legs (running) -->
+            <line x1="6" y1="12" x2="0" y2="26" stroke="#e7a86f" stroke-width="4" stroke-linecap="round"/>
+            <line x1="14" y1="12" x2="22" y2="24" stroke="#e7a86f" stroke-width="4" stroke-linecap="round"/>
+            <!-- arm up to pole -->
+            <line x1="14" y1="0" x2="20" y2="6" stroke="#f4c9a3" stroke-width="4" stroke-linecap="round"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- ===== Title band ===== -->
+    <div class="band">
+      <span class="tag">☀ なつやすみ気分 · take it easy</span>
+      <div class="greeting" id="greeting">Good afternoon.</div>
+      <div class="sub">One small thing at a time. 🌻</div>
+    </div>
+
+    <!-- ===== Quick add ===== -->
     <div class="quickadd">
-      <input id="input" type="text" placeholder="What's on your mind? Add it here…" autocomplete="off" />
+      <input id="input" type="text" placeholder="Catch a thought… type it here" autocomplete="off" />
       <button class="add-btn" id="addBtn" title="Add">+</button>
     </div>
 
-    <div class="now-label">▸ Right now</div>
+    <!-- ===== Right Now ===== -->
+    <div class="label">
+      <span class="en">Right Now</span>
+      <span class="jp">いま、これ</span>
+    </div>
     <div class="now-card">
+      <svg class="wave" viewBox="0 0 640 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,8 C60,0 100,14 160,8 C220,2 260,14 320,8 C380,2 420,14 480,8 C540,2 580,14 640,8 L640,0 L0,0 Z" fill="#ef5b43"/>
+      </svg>
       <div id="nowContent">
-        <div class="now-empty">No focus task yet. Tap the ☆ on a task to bring it here.</div>
+        <div class="now-empty">No focus task yet — tap the ☆ on any task to bring it up here.</div>
       </div>
       <div class="timer" id="timer">
         <span class="timer-time" id="timerTime">05:00</span>
@@ -226,30 +359,34 @@
       </div>
     </div>
 
-    <div class="list-label">
-      <span>Everything else</span>
+    <!-- ===== List ===== -->
+    <div class="label">
+      <span class="en">Today's Catch</span>
+      <span class="jp">やること</span>
       <span class="count" id="count"></span>
     </div>
     <ul id="list"></ul>
     <div class="empty-list" id="emptyList" style="display:none">
-      Nothing here yet — a clear mind is a good start. 🌱
+      All clear — nothing to catch right now. 🌱
     </div>
+
   </div>
 
   <div class="toast" id="toast">Nice. That's momentum. 🎉</div>
 
 <script>
   const CHECK_SVG = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
-  const PRAISE = ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀"];
+  const PRAISE = ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀","Caught it! 🦋"];
 
   let state = load();
-
   const $ = (id) => document.getElementById(id);
   const input = $('input');
 
   function load() {
-    try { return JSON.parse(localStorage.getItem('momentum') || '{}').tasks ? JSON.parse(localStorage.getItem('momentum')) : { tasks: [], focusId: null }; }
-    catch { return { tasks: [], focusId: null }; }
+    try {
+      const raw = JSON.parse(localStorage.getItem('momentum') || '{}');
+      return Array.isArray(raw.tasks) ? { tasks: raw.tasks, focusId: raw.focusId ?? null } : { tasks: [], focusId: null };
+    } catch { return { tasks: [], focusId: null }; }
   }
   function save() { localStorage.setItem('momentum', JSON.stringify(state)); }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
@@ -289,7 +426,6 @@
     const active = state.tasks.filter(t => !t.done);
     const focus = state.tasks.find(t => t.id === state.focusId && !t.done);
 
-    // Right Now
     const nc = $('nowContent');
     if (focus) {
       nc.innerHTML = `
@@ -300,29 +436,26 @@
           <button class="btn" data-unfocus="1">Clear focus</button>
         </div>`;
     } else {
-      nc.innerHTML = `<div class="now-empty">No focus task yet. Tap the ☆ on a task to bring it here.</div>`;
+      nc.innerHTML = `<div class="now-empty">No focus task yet — tap the ☆ on any task to bring it up here.</div>`;
       $('timer').classList.remove('show');
       resetTimer();
     }
 
-    // List
     const list = $('list');
     list.innerHTML = '';
-    const ordered = [...active];
-    state.tasks.filter(t => t.done).forEach(t => ordered.push(t));
-
+    const ordered = [...active, ...state.tasks.filter(t => t.done)];
     ordered.forEach(t => {
       const li = document.createElement('li');
       li.className = 'task' + (t.done ? ' done' : '') + (t.id === state.focusId ? ' focused' : '');
       li.innerHTML = `
         <div class="check" data-toggle="${t.id}">${CHECK_SVG}</div>
         <div class="task-text">${esc(t.text)}</div>
-        ${t.done ? '' : `<button class="focus-star" data-focus="${t.id}" title="Focus on this">${t.id === state.focusId ? '★' : '☆'}</button>`}
-        <button class="del" data-del="${t.id}" title="Remove">✕</button>`;
+        ${t.done ? '' : `<button class="icon-btn focus-star" data-focus="${t.id}" title="Focus on this">${t.id === state.focusId ? '★' : '☆'}</button>`}
+        <button class="icon-btn del" data-del="${t.id}" title="Remove">✕</button>`;
       list.appendChild(li);
     });
 
-    $('count').textContent = active.length ? `${active.length} left` : 'all clear';
+    $('count').textContent = active.length ? `${active.length} left` : 'all clear ☀';
     $('emptyList').style.display = state.tasks.length ? 'none' : 'block';
   }
 
@@ -357,11 +490,13 @@
     else if (t.id === 'timerToggle') toggleTimer();
   });
 
-  // Greeting by time of day
+  // Greeting by time of day (with a little kana accent)
   (function () {
     const h = new Date().getHours();
-    const g = h < 12 ? 'Good morning.' : h < 18 ? 'Good afternoon.' : 'Good evening.';
-    $('greeting').textContent = g + " Let's get one thing done.";
+    let en = 'Good evening.', jp = 'こんばんは';
+    if (h < 12) { en = 'Good morning.'; jp = 'おはよう'; }
+    else if (h < 18) { en = 'Good afternoon.'; jp = 'こんにちは'; }
+    $('greeting').innerHTML = `${en} <span class="kana">${jp}</span>`;
   })();
 
   render();
