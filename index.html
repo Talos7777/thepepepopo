@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Summer To-Dos — one thing at a time</title>
+<title>عوافي · afiyah — one thing at a time</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;700;800&family=Fredoka:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
@@ -96,9 +96,15 @@
     transform: rotate(-1.5deg);
     box-shadow: 0 2px 0 var(--coral-deep);
   }
-  .greeting {
+  .brand {
     font-family: var(--font-display); font-weight: 700;
-    font-size: 30px; line-height: 1.15; margin: 10px 0 2px; color: var(--ink);
+    font-size: 36px; line-height: 1; color: var(--ink);
+    display: flex; align-items: baseline; justify-content: center; gap: 9px;
+  }
+  .brand-latin { font-family: var(--font); font-weight: 700; font-size: 14px; letter-spacing: .5px; color: var(--coral); }
+  .greeting {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 18px; line-height: 1.2; margin: 9px 0 2px; color: var(--ink-soft);
   }
   .greeting .kana { color: var(--sky-deep); }
   .sub { color: var(--ink-soft); font-size: 14px; font-weight: 500; }
@@ -340,7 +346,7 @@
 
     <!-- ===== Title band ===== -->
     <div class="band">
-      <span class="tag">☀ <span id="tagJp">なつやすみ気分</span> · <span data-i18n="takeItEasy">take it easy</span></span>
+      <div class="brand">عوافي <span class="brand-latin">afiyah</span></div>
       <div class="greeting" id="greeting">Good afternoon.</div>
       <div class="sub" data-i18n="subOneThing">One small thing at a time. 🌻</div>
     </div>
@@ -477,10 +483,11 @@
   const $ = (id) => document.getElementById(id);
   const input = $('input');
 
+  const STORE = 'afiyah';
   function load() {
     try {
-      const raw = JSON.parse(localStorage.getItem('momentum') || '{}');
-      if (!Array.isArray(raw.tasks)) return { tasks: [], focusId: null, muted: false };
+      const raw = JSON.parse(localStorage.getItem(STORE) || localStorage.getItem('momentum') || '{}');
+      if (!Array.isArray(raw.tasks)) return { tasks: [], focusId: null, muted: false, lang: 'en' };
       raw.tasks.forEach(t => {
         if (!Array.isArray(t.subs)) t.subs = [];
         if (t.done && !t.completedAt) t.completedAt = Date.now();  // start its week now
@@ -489,7 +496,7 @@
     } catch { return { tasks: [], focusId: null, muted: false, lang: 'en' }; }
   }
   function archived(t) { return t.done && t.completedAt && (Date.now() - t.completedAt >= WEEK); }
-  function save() { localStorage.setItem('momentum', JSON.stringify(state)); }
+  function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function find(id) { return state.tasks.find(t => t.id === id); }
 
@@ -821,7 +828,6 @@
     document.body.dataset.time = skyBucket;
     $('skyArt').innerHTML = art;
     $('skyKana').textContent = kana;
-    $('tagJp').textContent = tag;
     updateGreeting();
   }
 
