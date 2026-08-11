@@ -114,6 +114,11 @@
   .wordmark img {
     height: 116px; width: auto; max-width: 82vw; display: block;
     filter: drop-shadow(0 3px 7px rgba(28,38,58,.32));
+    animation: floaty 4.5s ease-in-out infinite;
+  }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-7px); }
   }
   .greeting {
     font-family: var(--font-display); font-weight: 700;
