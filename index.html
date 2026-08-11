@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Momentum — one thing at a time</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --text: #1f2430;
+    --muted: #8a91a0;
+    --line: #e9ebef;
+    --accent: #6c8cff;
+    --accent-soft: #eef2ff;
+    --done: #37c98b;
+    --radius: 18px;
+    --shadow: 0 1px 2px rgba(20,24,40,.04), 0 8px 24px rgba(20,24,40,.06);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161c;
+      --surface: #1c1f27;
+      --text: #eceef2;
+      --muted: #868da0;
+      --line: #2a2e39;
+      --accent: #7f9bff;
+      --accent-soft: #232838;
+      --done: #3ad39a;
+      --shadow: 0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* Header */
+  header { text-align: center; margin-bottom: 28px; }
+  .logo { font-size: 15px; font-weight: 700; letter-spacing: .3px; color: var(--muted); }
+  .greeting { font-size: 26px; font-weight: 700; margin-top: 6px; }
+  .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
+
+  /* Quick add */
+  .quickadd {
+    display: flex;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 8px 8px 8px 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 26px;
+    align-items: center;
+  }
+  .quickadd input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+  }
+  .quickadd input::placeholder { color: var(--muted); }
+  .add-btn {
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    font-size: 22px;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: transform .12s ease, opacity .2s;
+    flex-shrink: 0;
+  }
+  .add-btn:active { transform: scale(.9); }
+
+  /* Right Now zone */
+  .now-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted);
+    margin: 0 4px 10px;
+  }
+  .now-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .now-card::before {
+    content: "";
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--accent);
+  }
+  .now-title { font-size: 20px; font-weight: 600; margin-bottom: 14px; }
+  .now-empty { color: var(--muted); font-size: 16px; text-align: center; padding: 8px 0; }
+  .now-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text);
+    padding: 9px 16px;
+    border-radius: 12px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .btn:hover { background: var(--accent-soft); }
+  .btn.primary { background: var(--done); border-color: var(--done); color: #fff; }
+  .btn.primary:hover { opacity: .92; }
+
+  /* Timer */
+  .timer {
+    display: none;
+    align-items: center; gap: 12px;
+    margin-top: 16px; padding-top: 16px;
+    border-top: 1px dashed var(--line);
+  }
+  .timer.show { display: flex; }
+  .timer-time { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .timer .muted { color: var(--muted); font-size: 13px; }
+
+  /* List */
+  .list-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--muted);
+    margin: 0 4px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .count { font-weight: 600; letter-spacing: 0; text-transform: none; }
+  ul { list-style: none; }
+  .task {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    transition: opacity .3s, transform .3s;
+  }
+  .task.focused { border-color: var(--accent); }
+  .check {
+    width: 24px; height: 24px; flex-shrink: 0;
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: background .2s, border-color .2s, transform .15s;
+  }
+  .check:hover { border-color: var(--done); }
+  .check svg { width: 13px; height: 13px; stroke: #fff; stroke-width: 3.5; fill: none; opacity: 0; transition: opacity .15s; }
+  .task.done .check { background: var(--done); border-color: var(--done); }
+  .task.done .check svg { opacity: 1; }
+  .task.done .task-text { color: var(--muted); text-decoration: line-through; }
+  .task-text { flex: 1; font-size: 16px; word-break: break-word; }
+  .task-meta { color: var(--muted); font-size: 12px; }
+  .focus-star {
+    background: none; border: none; cursor: pointer;
+    font-size: 17px; color: var(--muted); opacity: .5;
+    transition: opacity .15s, transform .15s; padding: 4px;
+  }
+  .focus-star:hover { opacity: 1; transform: scale(1.15); }
+  .task.focused .focus-star { opacity: 1; color: var(--accent); }
+  .del {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; color: var(--muted); opacity: 0;
+    transition: opacity .15s; padding: 4px;
+  }
+  .task:hover .del { opacity: .5; }
+  .del:hover { opacity: 1; }
+
+  .empty-list { text-align: center; color: var(--muted); padding: 30px 0; font-size: 15px; }
+
+  /* Celebrate toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(100px);
+    background: var(--text); color: var(--bg);
+    padding: 12px 22px; border-radius: 999px;
+    font-size: 15px; font-weight: 600;
+    box-shadow: var(--shadow);
+    opacity: 0; transition: transform .35s cubic-bezier(.2,.9,.3,1.2), opacity .35s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">◆ MOMENTUM</div>
+      <div class="greeting" id="greeting">Let's get one thing done.</div>
+      <div class="sub">Small steps count. Pick one and start.</div>
+    </header>
+
+    <div class="quickadd">
+      <input id="input" type="text" placeholder="What's on your mind? Add it here…" autocomplete="off" />
+      <button class="add-btn" id="addBtn" title="Add">+</button>
+    </div>
+
+    <div class="now-label">▸ Right now</div>
+    <div class="now-card">
+      <div id="nowContent">
+        <div class="now-empty">No focus task yet. Tap the ☆ on a task to bring it here.</div>
+      </div>
+      <div class="timer" id="timer">
+        <span class="timer-time" id="timerTime">05:00</span>
+        <button class="btn" id="timerToggle">Start</button>
+        <span class="muted">Just 5 minutes. That's it.</span>
+      </div>
+    </div>
+
+    <div class="list-label">
+      <span>Everything else</span>
+      <span class="count" id="count"></span>
+    </div>
+    <ul id="list"></ul>
+    <div class="empty-list" id="emptyList" style="display:none">
+      Nothing here yet — a clear mind is a good start. 🌱
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Nice. That's momentum. 🎉</div>
+
+<script>
+  const CHECK_SVG = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
+  const PRAISE = ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀"];
+
+  let state = load();
+
+  const $ = (id) => document.getElementById(id);
+  const input = $('input');
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem('momentum') || '{}').tasks ? JSON.parse(localStorage.getItem('momentum')) : { tasks: [], focusId: null }; }
+    catch { return { tasks: [], focusId: null }; }
+  }
+  function save() { localStorage.setItem('momentum', JSON.stringify(state)); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  function addTask(text) {
+    text = text.trim();
+    if (!text) return;
+    state.tasks.unshift({ id: uid(), text, done: false });
+    save(); render();
+  }
+  function toggle(id) {
+    const t = state.tasks.find(t => t.id === id);
+    if (!t) return;
+    t.done = !t.done;
+    if (t.done) { if (state.focusId === id) state.focusId = null; celebrate(); }
+    save(); render();
+  }
+  function del(id) {
+    state.tasks = state.tasks.filter(t => t.id !== id);
+    if (state.focusId === id) state.focusId = null;
+    save(); render();
+  }
+  function setFocus(id) {
+    state.focusId = state.focusId === id ? null : id;
+    save(); render();
+  }
+
+  function celebrate() {
+    const toast = $('toast');
+    toast.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+    toast.classList.add('show');
+    clearTimeout(celebrate._t);
+    celebrate._t = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function render() {
+    const active = state.tasks.filter(t => !t.done);
+    const focus = state.tasks.find(t => t.id === state.focusId && !t.done);
+
+    // Right Now
+    const nc = $('nowContent');
+    if (focus) {
+      nc.innerHTML = `
+        <div class="now-title">${esc(focus.text)}</div>
+        <div class="now-actions">
+          <button class="btn primary" data-done="${focus.id}">✓ Done</button>
+          <button class="btn" id="focusTimerBtn">⏱ Focus 5 min</button>
+          <button class="btn" data-unfocus="1">Clear focus</button>
+        </div>`;
+    } else {
+      nc.innerHTML = `<div class="now-empty">No focus task yet. Tap the ☆ on a task to bring it here.</div>`;
+      $('timer').classList.remove('show');
+      resetTimer();
+    }
+
+    // List
+    const list = $('list');
+    list.innerHTML = '';
+    const ordered = [...active];
+    state.tasks.filter(t => t.done).forEach(t => ordered.push(t));
+
+    ordered.forEach(t => {
+      const li = document.createElement('li');
+      li.className = 'task' + (t.done ? ' done' : '') + (t.id === state.focusId ? ' focused' : '');
+      li.innerHTML = `
+        <div class="check" data-toggle="${t.id}">${CHECK_SVG}</div>
+        <div class="task-text">${esc(t.text)}</div>
+        ${t.done ? '' : `<button class="focus-star" data-focus="${t.id}" title="Focus on this">${t.id === state.focusId ? '★' : '☆'}</button>`}
+        <button class="del" data-del="${t.id}" title="Remove">✕</button>`;
+      list.appendChild(li);
+    });
+
+    $('count').textContent = active.length ? `${active.length} left` : 'all clear';
+    $('emptyList').style.display = state.tasks.length ? 'none' : 'block';
+  }
+
+  function esc(s) { return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  // ---- Timer ----
+  let timerSec = 300, timerRunning = false, timerInt = null;
+  function fmt(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+  function resetTimer() { clearInterval(timerInt); timerRunning = false; timerSec = 300; const tt = $('timerTime'); if (tt) tt.textContent = fmt(timerSec); const tg = $('timerToggle'); if (tg) tg.textContent = 'Start'; }
+  function toggleTimer() {
+    if (timerRunning) { clearInterval(timerInt); timerRunning = false; $('timerToggle').textContent = 'Resume'; return; }
+    timerRunning = true; $('timerToggle').textContent = 'Pause';
+    timerInt = setInterval(() => {
+      timerSec--; $('timerTime').textContent = fmt(timerSec);
+      if (timerSec <= 0) { clearInterval(timerInt); timerRunning = false; celebrate(); resetTimer(); }
+    }, 1000);
+  }
+
+  // ---- Events ----
+  $('addBtn').addEventListener('click', () => { addTask(input.value); input.value = ''; input.focus(); });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { addTask(input.value); input.value = ''; } });
+
+  document.body.addEventListener('click', e => {
+    const t = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],#focusTimerBtn,#timerToggle');
+    if (!t) return;
+    if (t.dataset.toggle) toggle(t.dataset.toggle);
+    else if (t.dataset.del) del(t.dataset.del);
+    else if (t.dataset.focus) setFocus(t.dataset.focus);
+    else if (t.dataset.done) toggle(t.dataset.done);
+    else if (t.dataset.unfocus) setFocus(state.focusId);
+    else if (t.id === 'focusTimerBtn') { $('timer').classList.add('show'); }
+    else if (t.id === 'timerToggle') toggleTimer();
+  });
+
+  // Greeting by time of day
+  (function () {
+    const h = new Date().getHours();
+    const g = h < 12 ? 'Good morning.' : h < 18 ? 'Good afternoon.' : 'Good evening.';
+    $('greeting').textContent = g + " Let's get one thing done.";
+  })();
+
+  render();
+  input.focus();
+</script>
+</body>
+</html>
