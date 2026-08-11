@@ -6,7 +6,7 @@
 <title>Summer To-Dos — one thing at a time</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;700;800&family=Fredoka:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
     --sky:       #6cbdec;
@@ -26,8 +26,8 @@
     --line:      #eadfc4;
 
     --radius: 20px;
-    --font-display: 'Fredoka', 'M PLUS Rounded 1c', sans-serif;
-    --font: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Fredoka', 'Baloo Bhaijaan 2', 'M PLUS Rounded 1c', sans-serif;
+    --font: 'M PLUS Rounded 1c', 'Baloo Bhaijaan 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color-scheme: light;
   }
 
@@ -289,7 +289,7 @@
 
     <!-- ===== Quick add ===== -->
     <div class="quickadd">
-      <input id="input" type="text" placeholder="Catch a thought… type it here" autocomplete="off" />
+      <input id="input" type="text" dir="auto" placeholder="Catch a thought… type it here" autocomplete="off" />
       <button class="add-btn" id="addBtn" title="Add">+</button>
     </div>
 
@@ -395,7 +395,7 @@
   // ----- subtask checklist markup (used inline + in the focus card) -----
   function subsHTML(t, focusVal) {
     const rows = t.subs.map(s => `
-      <div class="sub ${s.done ? 'done' : ''}">
+      <div class="sub ${s.done ? 'done' : ''}" dir="auto">
         <div class="subcheck" data-subtoggle="${t.id}:${s.id}">${CHECK}</div>
         <div class="subtext">${esc(s.text)}</div>
         <button class="icon-btn subdel" data-subdel="${t.id}:${s.id}" title="Remove step">✕</button>
@@ -403,7 +403,7 @@
     return `<div class="subs">${rows}
       <div class="subadd">
         <span class="plus">+</span>
-        <input type="text" data-subadd="${t.id}" placeholder="add a small step…" autocomplete="off" ${focusVal ? 'data-focusme="1"' : ''} />
+        <input type="text" dir="auto" data-subadd="${t.id}" placeholder="add a small step…" autocomplete="off" ${focusVal ? 'data-focusme="1"' : ''} />
       </div>
     </div>`;
   }
@@ -416,8 +416,10 @@
     const nc = $('nowContent');
     if (focus) {
       nc.innerHTML = `
-        <div class="now-title">${esc(focus.text)}</div>
-        ${subsHTML(focus, false)}
+        <div dir="auto">
+          <div class="now-title">${esc(focus.text)}</div>
+          ${subsHTML(focus, false)}
+        </div>
         <div class="now-actions">
           <button class="btn primary" data-done="${focus.id}">✓ Done</button>
           <button class="btn" id="focusTimerBtn">⏱ Focus 5 min</button>
@@ -445,7 +447,7 @@
       );
       li.className = 'task' + (t.done ? ' done' : '') + (t.id === state.focusId ? ' focused' : '');
       li.innerHTML = `
-        <div class="task-row">
+        <div class="task-row" dir="auto">
           <div class="check" data-toggle="${t.id}">${CHECK}</div>
           <div class="task-text">${esc(t.text)}</div>
           ${stepsBtn}
@@ -550,6 +552,7 @@
   }
 
   setSky();
+  setInterval(setSky, 60000);   // keep the sky in sync with the clock
   render();
   input.focus();
 </script>
