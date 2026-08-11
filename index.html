@@ -241,87 +241,39 @@
 <body>
   <div class="app">
 
-    <!-- ===== Cover art: summer scene ===== -->
+    <!-- ===== Cover art: a classic sky ===== -->
     <div class="scene" aria-hidden="true">
-      <svg viewBox="0 0 640 236" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
+      <svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
         <defs>
           <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="#5cb2e6"/>
             <stop offset="1" stop-color="#bfe7f7"/>
           </linearGradient>
-          <clipPath id="round"><rect x="0" y="0" width="640" height="236" rx="20" ry="20"/></clipPath>
+          <clipPath id="round"><rect x="0" y="0" width="640" height="150" rx="20" ry="20"/></clipPath>
         </defs>
 
         <g clip-path="url(#round)">
           <!-- sky -->
-          <rect x="0" y="0" width="640" height="236" fill="url(#sky)"/>
+          <rect x="0" y="0" width="640" height="150" fill="url(#sky)"/>
 
-          <!-- sun -->
-          <circle cx="86" cy="66" r="46" fill="#ffe07a" opacity=".55"/>
-          <circle cx="86" cy="66" r="32" fill="#fdd451"/>
-
-          <!-- clouds -->
+          <!-- soft classic clouds -->
           <g fill="#ffffff">
-            <g opacity=".97">
-              <ellipse cx="250" cy="72" rx="60" ry="34"/>
-              <ellipse cx="205" cy="86" rx="42" ry="28"/>
-              <ellipse cx="300" cy="88" rx="46" ry="26"/>
-              <rect x="200" y="80" width="105" height="26" rx="13"/>
+            <g opacity=".98">
+              <ellipse cx="150" cy="60" rx="58" ry="30"/>
+              <ellipse cx="108" cy="74" rx="40" ry="24"/>
+              <ellipse cx="196" cy="76" rx="44" ry="22"/>
+              <rect x="104" y="68" width="96" height="24" rx="12"/>
             </g>
-            <g opacity=".9">
-              <ellipse cx="470" cy="50" rx="52" ry="30"/>
-              <ellipse cx="512" cy="64" rx="40" ry="24"/>
-              <ellipse cx="435" cy="66" rx="34" ry="20"/>
+            <g opacity=".92">
+              <ellipse cx="440" cy="40" rx="50" ry="27"/>
+              <ellipse cx="480" cy="52" rx="38" ry="22"/>
+              <ellipse cx="406" cy="54" rx="32" ry="19"/>
             </g>
-            <g opacity=".8">
-              <ellipse cx="560" cy="120" rx="46" ry="24"/>
-              <ellipse cx="600" cy="128" rx="34" ry="18"/>
+            <g opacity=".82">
+              <ellipse cx="560" cy="104" rx="52" ry="26"/>
+              <ellipse cx="606" cy="112" rx="36" ry="19"/>
+              <ellipse cx="516" cy="114" rx="30" ry="16"/>
             </g>
-          </g>
-
-          <!-- back hill -->
-          <path d="M0,200 C120,150 260,160 380,178 C500,196 580,182 640,168 L640,236 L0,236 Z" fill="#8fc65a"/>
-          <!-- front hill -->
-          <path d="M0,236 L0,214 C130,190 300,206 430,214 C520,220 590,210 640,204 L640,236 Z" fill="#77b344"/>
-          <!-- little trail -->
-          <path d="M300,236 C320,220 322,214 350,206 C372,200 386,202 402,206" stroke="#eadfb8" stroke-width="10" fill="none" stroke-linecap="round"/>
-
-          <!-- sunflowers (bottom-right, like the game cover) -->
-          <g>
-            <g transform="translate(540,196)">
-              <rect x="-2" y="0" width="4" height="34" fill="#4f8a2e"/>
-              <g fill="#f8c53c"><circle cx="0" cy="-4" r="4"/><circle cx="9" cy="0" r="4"/><circle cx="7" cy="9" r="4"/><circle cx="-7" cy="9" r="4"/><circle cx="-9" cy="0" r="4"/><circle cx="6" cy="-9" r="4"/><circle cx="-6" cy="-9" r="4"/></g>
-              <circle cx="0" cy="0" r="6" fill="#7a4a1e"/>
-            </g>
-            <g transform="translate(578,204)">
-              <rect x="-2" y="0" width="4" height="30" fill="#4f8a2e"/>
-              <g fill="#f8c53c"><circle cx="0" cy="-4" r="3.6"/><circle cx="8" cy="0" r="3.6"/><circle cx="6" cy="8" r="3.6"/><circle cx="-6" cy="8" r="3.6"/><circle cx="-8" cy="0" r="3.6"/><circle cx="5" cy="-8" r="3.6"/><circle cx="-5" cy="-8" r="3.6"/></g>
-              <circle cx="0" cy="0" r="5.5" fill="#7a4a1e"/>
-            </g>
-            <g transform="translate(610,198)">
-              <rect x="-2" y="0" width="4" height="36" fill="#4f8a2e"/>
-              <g fill="#f8c53c"><circle cx="0" cy="-4" r="4"/><circle cx="9" cy="0" r="4"/><circle cx="7" cy="9" r="4"/><circle cx="-7" cy="9" r="4"/><circle cx="-9" cy="0" r="4"/><circle cx="6" cy="-9" r="4"/><circle cx="-6" cy="-9" r="4"/></g>
-              <circle cx="0" cy="0" r="6" fill="#7a4a1e"/>
-            </g>
-          </g>
-
-          <!-- kid with a bug net, mid-run -->
-          <g transform="translate(360,150)">
-            <!-- net pole + hoop -->
-            <line x1="18" y1="6" x2="44" y2="-26" stroke="#8a5a2b" stroke-width="3" stroke-linecap="round"/>
-            <circle cx="49" cy="-32" r="11" fill="none" stroke="#ffffff" stroke-width="3"/>
-            <!-- little bug -->
-            <circle cx="70" cy="-44" r="3" fill="#3a4653"/>
-            <!-- body -->
-            <path d="M2,2 q6,-14 14,-12 q7,2 5,12 l-3,10 -12,0 z" fill="#f6c944"/>
-            <!-- head -->
-            <circle cx="9" cy="-14" r="7" fill="#f4c9a3"/>
-            <path d="M2,-16 q7,-8 14,0" fill="#4a3524"/>
-            <!-- legs (running) -->
-            <line x1="6" y1="12" x2="0" y2="26" stroke="#e7a86f" stroke-width="4" stroke-linecap="round"/>
-            <line x1="14" y1="12" x2="22" y2="24" stroke="#e7a86f" stroke-width="4" stroke-linecap="round"/>
-            <!-- arm up to pole -->
-            <line x1="14" y1="0" x2="20" y2="6" stroke="#f4c9a3" stroke-width="4" stroke-linecap="round"/>
           </g>
         </g>
       </svg>
