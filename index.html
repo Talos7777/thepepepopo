@@ -171,12 +171,22 @@
 
   /* ---------- Focus timer ---------- */
   .timer {
-    display: none; align-items: center; gap: 12px;
+    display: none; flex-direction: column; gap: 14px;
     margin-top: 18px; padding-top: 16px; border-top: 2px dashed var(--line);
   }
   .timer.show { display: flex; }
+  .timer-durations { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .dur {
+    font-family: var(--font); font-weight: 700; font-size: 13px;
+    border: 2px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    padding: 5px 13px; border-radius: 999px; cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .dur:hover { border-color: var(--sky); }
+  .dur.active { background: var(--sky); color: #fff; border-color: var(--sky); }
+  .dur-unit { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+  .timer-run { display: flex; align-items: center; gap: 14px; }
   .timer-time { font-family: var(--font-display); font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; color: var(--sky-deep); }
-  .timer .muted { color: var(--ink-soft); font-size: 13px; font-weight: 500; }
 
   /* ---------- Task list ---------- */
   ul { list-style: none; }
@@ -355,9 +365,17 @@
         <div class="now-empty">No focus task yet — tap the ☆ on any task to bring it up here.</div>
       </div>
       <div class="timer" id="timer">
-        <span class="timer-time" id="timerTime">05:00</span>
-        <button class="btn" id="timerToggle">Start</button>
-        <span class="muted" data-i18n="just5">Just 5 minutes. That's it.</span>
+        <div class="timer-durations">
+          <button class="dur active" data-dur="5">5</button>
+          <button class="dur" data-dur="10">10</button>
+          <button class="dur" data-dur="15">15</button>
+          <button class="dur" data-dur="30">30</button>
+          <span class="dur-unit" data-i18n="min">min</span>
+        </div>
+        <div class="timer-run">
+          <span class="timer-time" id="timerTime">05:00</span>
+          <button class="btn" id="timerToggle">Start</button>
+        </div>
       </div>
     </div>
 
@@ -409,8 +427,7 @@
       catchThought: 'Catch a thought… type it here',
       rightNow: 'Right Now',
       noFocus: 'No focus task yet — tap the ☆ on any task to bring it up here.',
-      done: '✓ Done', focus5: '⏱ Focus 5 min', clearFocus: 'Clear focus',
-      just5: "Just 5 minutes. That's it.",
+      done: '✓ Done', focus5: '⏱ Focus timer', clearFocus: 'Clear focus', min: 'min',
       start: 'Start', pause: 'Pause', resume: 'Resume',
       todaysCatch: "Today's Catch",
       left: n => `${n} left`, allClear: 'all clear ☀',
@@ -432,8 +449,7 @@
       catchThought: 'اكتب اللي في بالك…',
       rightNow: 'الحين',
       noFocus: 'ما اخترت مهمة للتركيز — اضغط ☆ على أي مهمة عشان تجيبها هنا.',
-      done: '✓ خلّصت', focus5: '⏱ ركّز 5 دقايق', clearFocus: 'انهي التركيز',
-      just5: 'بس 5 دقايق. وبس.',
+      done: '✓ خلّصت', focus5: '⏱ مؤقّت التركيز', clearFocus: 'انهي التركيز', min: 'دقيقة',
       start: 'ابدأ', pause: 'وقّف', resume: 'كمّل',
       todaysCatch: 'مهام اليوم',
       left: n => `باقي ${n}`, allClear: 'خلّصت الكل ☀',
@@ -713,9 +729,14 @@
   function esc(s) { return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
   // ---- Timer ----
-  let timerSec = 300, timerRunning = false, timerInt = null;
+  let timerMinutes = 5, timerSec = 300, timerRunning = false, timerInt = null;
   function fmt(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
-  function resetTimer() { clearInterval(timerInt); timerRunning = false; timerSec = 300; const tt = $('timerTime'); if (tt) tt.textContent = fmt(timerSec); const tg = $('timerToggle'); if (tg) tg.textContent = t('start'); }
+  function resetTimer() { clearInterval(timerInt); timerRunning = false; timerSec = timerMinutes * 60; const tt = $('timerTime'); if (tt) tt.textContent = fmt(timerSec); const tg = $('timerToggle'); if (tg) tg.textContent = t('start'); }
+  function setDuration(min) {
+    timerMinutes = min;
+    document.querySelectorAll('.dur').forEach(b => b.classList.toggle('active', Number(b.dataset.dur) === min));
+    resetTimer();
+  }
   function toggleTimer() {
     if (timerRunning) { clearInterval(timerInt); timerRunning = false; $('timerToggle').textContent = t('resume'); return; }
     timerRunning = true; $('timerToggle').textContent = t('pause');
@@ -730,7 +751,7 @@
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { addTask(input.value); input.value = ''; } });
 
   document.body.addEventListener('click', e => {
-    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-goto],#focusTimerBtn,#timerToggle,#soundToggle,#langToggle');
+    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-goto],[data-dur],#focusTimerBtn,#timerToggle,#soundToggle,#langToggle');
     if (!el) return;
     const d = el.dataset;
     if (d.toggle) toggle(d.toggle);
@@ -742,6 +763,7 @@
     else if (d.subtoggle) { const [a,b] = d.subtoggle.split(':'); toggleSub(a,b); }
     else if (d.subdel) { const [a,b] = d.subdel.split(':'); delSub(a,b); }
     else if (d.goto) setView(d.goto);
+    else if (d.dur) setDuration(Number(d.dur));
     else if (el.id === 'focusTimerBtn') $('timer').classList.add('show');
     else if (el.id === 'timerToggle') toggleTimer();
     else if (el.id === 'soundToggle') toggleMute();
