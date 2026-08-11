@@ -13,6 +13,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="عوافي" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%235cb2e6'/%3E%3Ccircle cx='13' cy='14' r='6.5' fill='%23fdd451'/%3E%3Cellipse cx='21' cy='22' rx='7' ry='3.4' fill='%23fff'/%3E%3C/svg%3E" />
+<link rel="icon" type="image/png" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;700;800&family=Fredoka:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet" />
@@ -342,6 +344,56 @@
     transition: transform .35s cubic-bezier(.2,.9,.3,1.3), opacity .3s;
   }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast .undo {
+    margin-inline-start: 14px; background: var(--sun); color: var(--ink);
+    border: none; border-radius: 999px; padding: 4px 13px;
+    font-family: var(--font); font-weight: 700; font-size: 13px; cursor: pointer;
+    pointer-events: auto;
+  }
+
+  /* ---------- Motion & delight ---------- */
+  @keyframes taskIn { from { opacity: 0; transform: translateY(-7px) scale(.98); } to { opacity: 1; transform: none; } }
+  .task.enter { animation: taskIn .28s cubic-bezier(.2,.7,.3,1); }
+  @keyframes taskOut { to { opacity: 0; transform: translateX(-14px) scale(.97); } }
+  .task.leaving, .hist-item.leaving { animation: taskOut .26s ease forwards; pointer-events: none; }
+  @keyframes pop { 0% { transform: scale(1); } 45% { transform: scale(1.32); } 100% { transform: scale(1); } }
+  .check.pop { animation: pop .32s ease; }
+
+  .confetti-piece { position: fixed; top: -18px; width: 10px; height: 14px; border-radius: 2px; z-index: 60; pointer-events: none; }
+
+  /* ---------- Inline edit ---------- */
+  .edit-input {
+    flex: 1; font-family: var(--font); font-size: 16px; font-weight: 500;
+    color: var(--ink); background: var(--cream);
+    border: 2px solid var(--sky); border-radius: 9px; padding: 4px 9px; outline: none;
+  }
+  .edit { color: var(--ink-soft); opacity: 0; }
+  .task:hover .edit { opacity: .5; }
+  .edit:hover { opacity: 1; }
+
+  /* ---------- Backup / restore ---------- */
+  .data-tools { display: flex; gap: 10px; justify-content: center; margin-top: 26px; }
+  .data-btn {
+    font-family: var(--font); font-weight: 700; font-size: 13px; color: var(--ink-soft);
+    background: transparent; border: 2px solid var(--line); border-radius: 999px;
+    padding: 7px 15px; cursor: pointer; transition: border-color .15s, color .15s;
+  }
+  .data-btn:hover { border-color: var(--sky); color: var(--ink); }
+
+  /* ---------- Accessibility ---------- */
+  button:focus-visible, input:focus-visible, [role="checkbox"]:focus-visible, a:focus-visible {
+    outline: 3px solid var(--sky-deep); outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; animation-iteration-count: 1 !important; }
+  }
+
+  /* touch devices can't hover — keep row actions visible */
+  @media (hover: none) {
+    .del, .edit { opacity: .5; }
+    .subdel { opacity: .5; }
+  }
 </style>
 </head>
 <body>
@@ -417,16 +469,21 @@
       <div class="empty-list" id="histEmpty" data-i18n="histEmpty">
         Nothing archived yet — finished tasks move here a week after you complete them. 🗓️
       </div>
+      <div class="data-tools">
+        <button class="data-btn" id="backupBtn" data-i18n="backup">Back up</button>
+        <button class="data-btn" id="restoreBtn" data-i18n="restore">Restore</button>
+        <input type="file" id="restoreFile" accept="application/json,.json" hidden />
+      </div>
     </div>
 
   </div><!-- /app -->
 
   <!-- ===== Bottom tab bar ===== -->
-  <nav class="tabbar">
-    <button class="tab active" data-goto="now">☀ <span data-i18n="today">Today</span></button>
+  <nav class="tabbar" aria-label="Views">
+    <button class="tab active" data-goto="now"><span data-i18n="today">Today</span></button>
     <button class="tab" data-goto="history"><span data-i18n="historyTab">History</span></button>
-    <button class="soundtoggle" id="langToggle" title="Language · اللغة">ع</button>
-    <button class="soundtoggle" id="soundToggle" title="Sound on/off">🔊</button>
+    <button class="soundtoggle" id="langToggle" title="Language · اللغة" aria-label="Switch language">ع</button>
+    <button class="soundtoggle" id="soundToggle" title="Sound on/off" aria-label="Toggle sound">🔊</button>
   </nav>
 
   <div class="toast" id="toast">Nice. That's momentum. 🎉</div>
@@ -453,6 +510,9 @@
       doneCount: n => `${n} done`,
       histEmpty: 'Nothing archived yet — finished tasks move here a week after you complete them. 🗓️',
       focusDone: "Time's up — great focus session! ⏱️✨",
+      removed: 'Task removed', undo: 'Undo', backup: 'Back up', restore: 'Restore',
+      editAria: 'Edit task', deleteAria: 'Remove task', focusAria: 'Focus on this',
+      restoreConfirm: 'Replace your current tasks with the backup file?',
       greet: { morning: 'Good morning.', afternoon: 'Good afternoon.', evening: 'Good evening.', night: 'Winding down.' },
       praise: ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀","Caught it! 🦋"],
       histDay: ts => new Date(ts).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
@@ -475,6 +535,9 @@
       doneCount: n => `${n} مكتملة`,
       histEmpty: 'ما فيه شي محفوظ بعد — المهام المخلّصة تجيك هنا بعد أسبوع من إنجازها. 🗓️',
       focusDone: 'خلص الوقت — تركيز حلو! ⏱️✨',
+      removed: 'انحذفت المهمة', undo: 'تراجع', backup: 'نسخة احتياطية', restore: 'استرجاع',
+      editAria: 'تعديل المهمة', deleteAria: 'حذف المهمة', focusAria: 'ركّز على هذي',
+      restoreConfirm: 'تبي تستبدل مهامك الحالية بالنسخة المحفوظة؟',
       greet: { morning: 'صباح الخير', afternoon: 'نهارك سعيد', evening: 'مساء الخير', night: 'سهرة هادئة' },
       praise: ["حلو! هذي البداية 🎉","خلّصتها! كمّل 🌟","شي أقل 💪","عاش، سويتها ✨","يلا اللي بعده 🚀","صدتها! 🦋"],
       histDay: ts => new Date(ts).toLocaleDateString('ar-SA', { weekday: 'short', month: 'short', day: 'numeric' }),
@@ -491,6 +554,10 @@
   const expanded = new Set();          // which tasks show their steps (UI only)
   const $ = (id) => document.getElementById(id);
   const input = $('input');
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let justAdded = null, justCompleted = null, editingId = null, lastDeleted = null;
+  const digits = (s) => lang === 'ar' ? String(s).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[+d]) : String(s);
 
   const STORE = 'afiyah';
   function load() {
@@ -511,21 +578,58 @@
 
   function addTask(text) {
     text = text.trim(); if (!text) return;
-    state.tasks.unshift({ id: uid(), text, done: false, subs: [] });
+    const id = uid();
+    state.tasks.unshift({ id, text, done: false, subs: [] });
+    justAdded = id;
     save(); render();
   }
   function toggle(id) {
     const t = find(id); if (!t) return;
     t.done = !t.done;
-    if (t.done) { t.completedAt = Date.now(); if (state.focusId === id) state.focusId = null; celebrate(); }
-    else { t.completedAt = null; }
+    if (t.done) {
+      t.completedAt = Date.now();
+      justCompleted = id;
+      if (state.focusId === id) state.focusId = null;
+      const activeLeft = state.tasks.filter(x => !x.done).length;
+      celebrate();
+      if (activeLeft === 0) confetti();   // cleared everything 🎉
+    } else { t.completedAt = null; }
     save(); render();
   }
   function del(id) {
-    state.tasks = state.tasks.filter(t => t.id !== id);
-    if (state.focusId === id) state.focusId = null;
-    save(); render();
+    const idx = state.tasks.findIndex(t => t.id === id);
+    if (idx < 0) return;
+    const removed = state.tasks[idx];
+    const finish = () => {
+      lastDeleted = { task: removed, index: idx };
+      state.tasks.splice(idx, 1);
+      if (state.focusId === id) state.focusId = null;
+      save(); render();
+      showToast(L().removed, { undo: true });
+    };
+    const row = document.querySelector(`[data-del="${id}"]`);
+    const el = row ? row.closest('.task, .hist-item') : null;
+    if (el && !reduceMotion) {
+      el.classList.add('leaving');
+      let done = false; const go = () => { if (!done) { done = true; finish(); } };
+      el.addEventListener('animationend', go, { once: true });
+      setTimeout(go, 320);
+    } else finish();
   }
+  function undoDelete() {
+    if (!lastDeleted) return;
+    const at = Math.min(lastDeleted.index, state.tasks.length);
+    state.tasks.splice(at, 0, lastDeleted.task);
+    lastDeleted = null;
+    save(); render();
+    $('toast').classList.remove('show');
+  }
+  function startEdit(id) { editingId = id; render(); const inp = document.querySelector(`[data-editinput="${id}"]`); if (inp) { inp.focus(); inp.select(); } }
+  function saveEdit(id, text) {
+    const t = find(id); if (t) { const v = text.trim(); if (v) t.text = v; }
+    editingId = null; save(); render();
+  }
+  function cancelEdit() { editingId = null; render(); }
   function setFocus(id) { state.focusId = state.focusId === id ? null : id; save(); render(); }
   function toggleExpand(id) { expanded.has(id) ? expanded.delete(id) : expanded.add(id); render(); }
 
@@ -546,15 +650,49 @@
     t.subs = t.subs.filter(s => s.id !== subId); save(); render();
   }
 
-  function celebrate(opts) {
+  function showToast(msg, opts) {
     opts = opts || {};
     const toast = $('toast');
-    const praise = L().praise;
-    toast.textContent = opts.msg || praise[Math.floor(Math.random() * praise.length)];
+    if (opts.undo) {
+      toast.innerHTML = '<span class="toast-msg"></span><button class="undo" id="undoBtn"></button>';
+      toast.querySelector('.toast-msg').textContent = msg;
+      toast.querySelector('.undo').textContent = L().undo;
+    } else {
+      toast.textContent = msg;
+    }
     toast.classList.add('show');
-    clearTimeout(celebrate._t);
-    celebrate._t = setTimeout(() => toast.classList.remove('show'), opts.msg ? 2600 : 1800);
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), opts.duration || (opts.undo ? 5000 : 1900));
+  }
+
+  function celebrate(opts) {
+    opts = opts || {};
+    const praise = L().praise;
+    showToast(opts.msg || praise[Math.floor(Math.random() * praise.length)], { duration: opts.msg ? 2600 : 1900 });
     (opts.sound || chime)();
+  }
+
+  // ---- Confetti burst (skipped when reduce-motion is on) ----
+  function confetti() {
+    if (reduceMotion) return;
+    const colors = ['#ef5b43', '#f8c53c', '#6cbdec', '#7cb84e', '#f4a98a'];
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.background = colors[i % colors.length];
+      p.style.left = (50 + (Math.random() * 46 - 23)) + 'vw';
+      document.body.appendChild(p);
+      const dx = (Math.random() * 2 - 1) * 190;
+      const dy = 78 + Math.random() * 30;
+      const rot = Math.random() * 720 - 360;
+      p.animate(
+        [
+          { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+          { transform: `translate(${dx}px, ${dy}vh) rotate(${rot}deg)`, opacity: 0 }
+        ],
+        { duration: 1500 + Math.random() * 700, easing: 'cubic-bezier(.2,.6,.3,1)' }
+      ).onfinish = () => p.remove();
+    }
   }
 
   // ---- Vaporwave 3-tone chime (Cmaj7 arpeggio: C–E–B), warm + dreamy ----
@@ -689,26 +827,32 @@
       const nSubs = t.subs.length;
       const nDone = t.subs.filter(s => s.done).length;
       const isOpen = expanded.has(t.id);
-      const stepsBtn = t.done ? '' : (
+      const editing = editingId === t.id;
+      const stepsBtn = (t.done || editing) ? '' : (
         nSubs
-          ? `<span class="chip">${nDone}/${nSubs}</span>
+          ? `<span class="chip">${digits(nDone)}/${digits(nSubs)}</span>
              <button class="steps-btn" data-expand="${t.id}">${isOpen ? L().hideSteps : L().steps}</button>`
           : `<button class="steps-btn" data-expand="${t.id}">${L().breakDown}</button>`
       );
-      li.className = 'task' + (t.done ? ' done' : '') + (t.id === state.focusId ? ' focused' : '');
+      const textCell = editing
+        ? `<input class="edit-input" dir="auto" data-editinput="${t.id}" value="${esc(t.text)}" autocomplete="off" aria-label="${L().editAria}" />`
+        : `<div class="task-text">${esc(t.text)}</div>`;
+      li.className = 'task' + (t.done ? ' done' : '') + (t.id === state.focusId ? ' focused' : '') + (t.id === justAdded ? ' enter' : '');
       li.innerHTML = `
         <div class="task-row" dir="auto">
-          <div class="check" data-toggle="${t.id}">${CHECK}</div>
-          <div class="task-text">${esc(t.text)}</div>
+          <div class="check${t.id === justCompleted ? ' pop' : ''}" data-toggle="${t.id}" role="checkbox" aria-checked="${t.done}" tabindex="0" aria-label="${esc(t.text)}">${CHECK}</div>
+          ${textCell}
           ${stepsBtn}
-          ${t.done ? '' : `<button class="icon-btn focus-star" data-focus="${t.id}" title="Focus on this">${t.id === state.focusId ? '★' : '☆'}</button>`}
-          <button class="icon-btn del" data-del="${t.id}" title="Remove">✕</button>
+          ${(t.done || editing) ? '' : `<button class="icon-btn edit" data-edit="${t.id}" title="${L().editAria}" aria-label="${L().editAria}">✎</button>`}
+          ${(t.done || editing) ? '' : `<button class="icon-btn focus-star" data-focus="${t.id}" title="${L().focusAria}" aria-label="${L().focusAria}">${t.id === state.focusId ? '★' : '☆'}</button>`}
+          <button class="icon-btn del" data-del="${t.id}" title="${L().deleteAria}" aria-label="${L().deleteAria}">✕</button>
         </div>
-        ${(!t.done && isOpen) ? subsHTML(t, false) : ''}`;
+        ${(!t.done && isOpen && !editing) ? subsHTML(t, false) : ''}`;
       list.appendChild(li);
     });
+    justAdded = null; justCompleted = null;
 
-    $('count').textContent = active.length ? L().left(active.length) : L().allClear;
+    $('count').textContent = active.length ? L().left(digits(active.length)) : L().allClear;
     const homeTasks = active.length + recentDone.length;
     $('emptyList').style.display = homeTasks ? 'none' : 'block';
 
@@ -735,10 +879,10 @@
       row.innerHTML = `
         <div class="hist-check">${CHECK}</div>
         <div class="hist-text">${esc(t.text)}</div>
-        <button class="icon-btn del" data-del="${t.id}" title="Remove">✕</button>`;
+        <button class="icon-btn del" data-del="${t.id}" title="${L().deleteAria}" aria-label="${L().deleteAria}">✕</button>`;
       hl.appendChild(row);
     });
-    $('histCount').textContent = done.length ? L().doneCount(done.length) : '';
+    $('histCount').textContent = done.length ? L().doneCount(digits(done.length)) : '';
     $('histEmpty').style.display = done.length ? 'none' : 'block';
   }
 
@@ -746,7 +890,7 @@
 
   // ---- Timer ----
   let timerMinutes = 5, timerSec = 300, timerRunning = false, timerInt = null;
-  function fmt(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
+  function fmt(s) { return digits(String(Math.floor(s/60)).padStart(2,'0')) + ':' + digits(String(s%60).padStart(2,'0')); }
   function resetTimer() { clearInterval(timerInt); timerRunning = false; timerSec = timerMinutes * 60; const tt = $('timerTime'); if (tt) tt.textContent = fmt(timerSec); const tg = $('timerToggle'); if (tg) tg.textContent = t('start'); }
   function setDuration(min) {
     timerMinutes = min;
@@ -758,7 +902,7 @@
     timerRunning = true; $('timerToggle').textContent = t('pause');
     timerInt = setInterval(() => {
       timerSec--; $('timerTime').textContent = fmt(timerSec);
-      if (timerSec <= 0) { clearInterval(timerInt); timerRunning = false; celebrate({ msg: L().focusDone, sound: timerDoneChime }); resetTimer(); }
+      if (timerSec <= 0) { clearInterval(timerInt); timerRunning = false; celebrate({ msg: L().focusDone, sound: timerDoneChime }); confetti(); resetTimer(); }
     }, 1000);
   }
 
@@ -767,12 +911,13 @@
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { addTask(input.value); input.value = ''; } });
 
   document.body.addEventListener('click', e => {
-    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-goto],[data-dur],#focusTimerBtn,#timerToggle,#soundToggle,#langToggle');
+    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-edit],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-goto],[data-dur],#focusTimerBtn,#timerToggle,#soundToggle,#langToggle,#undoBtn,#backupBtn,#restoreBtn');
     if (!el) return;
     const d = el.dataset;
     if (d.toggle) toggle(d.toggle);
     else if (d.del) del(d.del);
     else if (d.focus) setFocus(d.focus);
+    else if (d.edit) startEdit(d.edit);
     else if (d.done) toggle(d.done);
     else if (d.unfocus) setFocus(state.focusId);
     else if (d.expand) toggleExpand(d.expand);
@@ -784,17 +929,69 @@
     else if (el.id === 'timerToggle') toggleTimer();
     else if (el.id === 'soundToggle') toggleMute();
     else if (el.id === 'langToggle') toggleLang();
+    else if (el.id === 'undoBtn') undoDelete();
+    else if (el.id === 'backupBtn') exportData();
+    else if (el.id === 'restoreBtn') $('restoreFile').click();
   });
 
-  // add a step with Enter (keeps focus in the same field)
+  // Keyboard: Enter/Space on the round checkboxes (accessibility)
   document.body.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    const inp = e.target.closest('[data-subadd]');
-    if (!inp) return;
-    const taskId = inp.dataset.subadd;
-    addSub(taskId, inp.value);
-    const again = document.querySelector(`[data-subadd="${taskId}"]`);
-    if (again) again.focus();
+    const cb = e.target.closest('[role="checkbox"][data-toggle]');
+    if (cb && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggle(cb.dataset.toggle); return; }
+
+    // add a step with Enter (keeps focus in the same field)
+    if (e.key === 'Enter') {
+      const sub = e.target.closest('[data-subadd]');
+      if (sub) {
+        const taskId = sub.dataset.subadd;
+        addSub(taskId, sub.value);
+        const again = document.querySelector(`[data-subadd="${taskId}"]`);
+        if (again) again.focus();
+        return;
+      }
+    }
+
+    // inline task edit: Enter saves, Escape cancels
+    const ed = e.target.closest('[data-editinput]');
+    if (ed) {
+      if (e.key === 'Enter') { e.preventDefault(); saveEdit(ed.dataset.editinput, ed.value); }
+      else if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+    }
+  });
+
+  // save an inline edit when the field loses focus
+  document.body.addEventListener('blur', e => {
+    const ed = e.target.closest && e.target.closest('[data-editinput]');
+    if (ed && editingId) saveEdit(ed.dataset.editinput, ed.value);
+  }, true);
+
+  // ---- Backup / restore ----
+  function exportData() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'afiyah-backup.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  $('restoreFile').addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data.tasks)) throw 'bad';
+        if (!confirm(L().restoreConfirm)) return;
+        data.tasks.forEach(t => { if (!Array.isArray(t.subs)) t.subs = []; });
+        state.tasks = data.tasks;
+        state.focusId = data.focusId ?? null;
+        if (typeof data.muted === 'boolean') state.muted = data.muted;
+        save(); render();
+      } catch (err) { alert('Not a valid عوافي backup file.'); }
+      finally { e.target.value = ''; }
+    };
+    reader.readAsText(file);
   });
 
   // ---------- Time-of-day sky ----------
@@ -851,7 +1048,9 @@
     document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
     document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
     $('langToggle').textContent = t('langBtn');
+    document.querySelectorAll('.dur').forEach(b => { b.textContent = digits(b.dataset.dur); });
     if (!timerRunning) { const tg = $('timerToggle'); if (tg) tg.textContent = t('start'); }
+    const tt = $('timerTime'); if (tt && !timerRunning) tt.textContent = fmt(timerMinutes * 60);
     updateGreeting();
     render();
   }
