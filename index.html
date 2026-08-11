@@ -420,6 +420,7 @@
       today: 'Today', historyTab: 'History', historyTitle: 'History',
       doneCount: n => `${n} done`,
       histEmpty: 'Nothing archived yet — finished tasks move here a week after you complete them. 🗓️',
+      focusDone: "Time's up — great focus session! ⏱️✨",
       greet: { morning: 'Good morning.', afternoon: 'Good afternoon.', evening: 'Good evening.', night: 'Winding down.' },
       praise: ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀","Caught it! 🦋"],
       histDay: ts => new Date(ts).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
@@ -442,6 +443,7 @@
       today: 'اليوم', historyTab: 'السجل', historyTitle: 'السجل',
       doneCount: n => `${n} مكتملة`,
       histEmpty: 'ما فيه شي محفوظ بعد — المهام المخلّصة تجيك هنا بعد أسبوع من إنجازها. 🗓️',
+      focusDone: 'خلص الوقت — تركيز حلو! ⏱️✨',
       greet: { morning: 'صباح الخير', afternoon: 'نهارك سعيد', evening: 'مساء الخير', night: 'سهرة هادئة' },
       praise: ["حلو! هذي البداية 🎉","خلّصتها! كمّل 🌟","شي أقل 💪","عاش، سويتها ✨","يلا اللي بعده 🚀","صدتها! 🦋"],
       histDay: ts => new Date(ts).toLocaleDateString('ar-SA', { weekday: 'short', month: 'short', day: 'numeric' }),
@@ -512,14 +514,15 @@
     t.subs = t.subs.filter(s => s.id !== subId); save(); render();
   }
 
-  function celebrate() {
+  function celebrate(opts) {
+    opts = opts || {};
     const toast = $('toast');
     const praise = L().praise;
-    toast.textContent = praise[Math.floor(Math.random() * praise.length)];
+    toast.textContent = opts.msg || praise[Math.floor(Math.random() * praise.length)];
     toast.classList.add('show');
     clearTimeout(celebrate._t);
-    celebrate._t = setTimeout(() => toast.classList.remove('show'), 1800);
-    chime();
+    celebrate._t = setTimeout(() => toast.classList.remove('show'), opts.msg ? 2600 : 1800);
+    (opts.sound || chime)();
   }
 
   // ---- Vaporwave 3-tone chime (Cmaj7 arpeggio: C–E–B), warm + dreamy ----
@@ -556,6 +559,39 @@
         o.connect(g); o2.connect(g); g.connect(lp); g.connect(wet);
         o.start(t); o2.start(t); o.stop(t + 0.65); o2.stop(t + 0.65);
       });
+    } catch (e) { /* audio not available */ }
+  }
+
+  // ---- Focus-timer-done chime: a chill 5-note vaporwave phrase, played 3× ----
+  function timerDoneChime() {
+    if (state.muted) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const ctx = audioCtx, t0 = ctx.currentTime;
+
+      const master = ctx.createGain(); master.gain.value = 0.2; master.connect(ctx.destination);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800; lp.connect(master);
+      const delay = ctx.createDelay(); delay.delayTime.value = 0.22;
+      const fb = ctx.createGain(); fb.gain.value = 0.34;
+      const wet = ctx.createGain(); wet.gain.value = 0.5;
+      delay.connect(fb); fb.connect(delay); delay.connect(master); wet.connect(delay);
+
+      const notes = [523.25, 659.25, 783.99, 880.00, 987.77]; // C5 E5 G5 A5 B5 — mellow Cmaj9
+      const step = 0.17, loopDur = notes.length * step + 0.3;  // gap between repeats
+      for (let loop = 0; loop < 3; loop++) {
+        notes.forEach((f, i) => {
+          const t = t0 + loop * loopDur + i * step;
+          const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
+          const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = f; o2.detune.value = -7;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.0001, t);
+          g.gain.exponentialRampToValueAtTime(0.8, t + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+          o.connect(g); o2.connect(g); g.connect(lp); g.connect(wet);
+          o.start(t); o2.start(t); o.stop(t + 0.55); o2.stop(t + 0.55);
+        });
+      }
     } catch (e) { /* audio not available */ }
   }
 
@@ -685,7 +721,7 @@
     timerRunning = true; $('timerToggle').textContent = t('pause');
     timerInt = setInterval(() => {
       timerSec--; $('timerTime').textContent = fmt(timerSec);
-      if (timerSec <= 0) { clearInterval(timerInt); timerRunning = false; celebrate(); resetTimer(); }
+      if (timerSec <= 0) { clearInterval(timerInt); timerRunning = false; celebrate({ msg: L().focusDone, sound: timerDoneChime }); resetTimer(); }
     }, 1000);
   }
 
