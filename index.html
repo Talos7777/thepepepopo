@@ -300,6 +300,7 @@
   }
   .soundtoggle:hover { background: var(--cream); }
   .soundtoggle.off { opacity: .45; }
+  #langToggle { font-family: var(--font); font-weight: 800; font-size: 15px; color: var(--ink); }
 
   /* ---------- Celebrate toast ---------- */
   .toast {
@@ -327,21 +328,21 @@
 
     <!-- ===== Title band ===== -->
     <div class="band">
-      <span class="tag">☀ <span id="tagJp">なつやすみ気分</span> · take it easy</span>
+      <span class="tag">☀ <span id="tagJp">なつやすみ気分</span> · <span data-i18n="takeItEasy">take it easy</span></span>
       <div class="greeting" id="greeting">Good afternoon.</div>
-      <div class="sub">One small thing at a time. 🌻</div>
+      <div class="sub" data-i18n="subOneThing">One small thing at a time. 🌻</div>
     </div>
 
     <div id="homeView">
     <!-- ===== Quick add ===== -->
     <div class="quickadd">
-      <input id="input" type="text" dir="auto" placeholder="Catch a thought… type it here" autocomplete="off" />
+      <input id="input" type="text" dir="auto" data-i18n-ph="catchThought" placeholder="Catch a thought… type it here" autocomplete="off" />
       <button class="add-btn" id="addBtn" title="Add">+</button>
     </div>
 
     <!-- ===== Right Now ===== -->
     <div class="label">
-      <span class="en">Right Now</span>
+      <span class="en" data-i18n="rightNow">Right Now</span>
       <span class="jp">いま、これ</span>
     </div>
     <div class="now-card">
@@ -354,18 +355,18 @@
       <div class="timer" id="timer">
         <span class="timer-time" id="timerTime">05:00</span>
         <button class="btn" id="timerToggle">Start</button>
-        <span class="muted">Just 5 minutes. That's it.</span>
+        <span class="muted" data-i18n="just5">Just 5 minutes. That's it.</span>
       </div>
     </div>
 
     <!-- ===== List ===== -->
     <div class="label">
-      <span class="en">Today's Catch</span>
+      <span class="en" data-i18n="todaysCatch">Today's Catch</span>
       <span class="jp">やること</span>
       <span class="count" id="count"></span>
     </div>
     <ul id="list"></ul>
-    <div class="empty-list" id="emptyList" style="display:none">
+    <div class="empty-list" id="emptyList" data-i18n="emptyList" style="display:none">
       All clear — nothing to catch right now. 🌱
     </div>
     </div><!-- /homeView -->
@@ -373,12 +374,12 @@
     <!-- ===== History ===== -->
     <div id="historyView">
       <div class="label">
-        <span class="en">History</span>
+        <span class="en" data-i18n="historyTitle">History</span>
         <span class="jp">きろく</span>
         <span class="count" id="histCount"></span>
       </div>
       <div id="historyList"></div>
-      <div class="empty-list" id="histEmpty">
+      <div class="empty-list" id="histEmpty" data-i18n="histEmpty">
         Nothing archived yet — finished tasks move here a week after you complete them. 🗓️
       </div>
     </div>
@@ -387,8 +388,9 @@
 
   <!-- ===== Bottom tab bar ===== -->
   <nav class="tabbar">
-    <button class="tab active" data-goto="now">☀ <span>Today</span></button>
-    <button class="tab" data-goto="history">🗂 <span>History</span></button>
+    <button class="tab active" data-goto="now">☀ <span data-i18n="today">Today</span></button>
+    <button class="tab" data-goto="history">🗂 <span data-i18n="historyTab">History</span></button>
+    <button class="soundtoggle" id="langToggle" title="Language · اللغة">ع</button>
     <button class="soundtoggle" id="soundToggle" title="Sound on/off">🔊</button>
   </nav>
 
@@ -396,7 +398,58 @@
 
 <script>
   const CHECK = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
-  const PRAISE = ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀","Caught it! 🦋"];
+
+  // ---------- i18n (English + Saudi colloquial Arabic) ----------
+  const I18N = {
+    en: {
+      takeItEasy: 'take it easy',
+      subOneThing: 'One small thing at a time. 🌻',
+      catchThought: 'Catch a thought… type it here',
+      rightNow: 'Right Now',
+      noFocus: 'No focus task yet — tap the ☆ on any task to bring it up here.',
+      done: '✓ Done', focus5: '⏱ Focus 5 min', clearFocus: 'Clear focus',
+      just5: "Just 5 minutes. That's it.",
+      start: 'Start', pause: 'Pause', resume: 'Resume',
+      todaysCatch: "Today's Catch",
+      left: n => `${n} left`, allClear: 'all clear ☀',
+      emptyList: 'All clear — nothing to catch right now. 🌱',
+      breakDown: '＋ break it down', steps: '▸ steps', hideSteps: '▾ hide',
+      addStep: 'add a small step…',
+      today: 'Today', historyTab: 'History', historyTitle: 'History',
+      doneCount: n => `${n} done`,
+      histEmpty: 'Nothing archived yet — finished tasks move here a week after you complete them. 🗓️',
+      greet: { morning: 'Good morning.', afternoon: 'Good afternoon.', evening: 'Good evening.', night: 'Winding down.' },
+      praise: ["Nice. That's momentum. 🎉","Done! Keep it rolling. 🌟","One less thing. 💪","You did that. ✨","Boom. Next? 🚀","Caught it! 🦋"],
+      histDay: ts => new Date(ts).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      langBtn: 'ع'
+    },
+    ar: {
+      takeItEasy: 'خذها براحتك',
+      subOneThing: 'خطوة وحدة كل مرة 🌻',
+      catchThought: 'اكتب اللي في بالك…',
+      rightNow: 'الحين',
+      noFocus: 'ما اخترت مهمة للتركيز — اضغط ☆ على أي مهمة عشان تجيبها هنا.',
+      done: '✓ خلّصت', focus5: '⏱ ركّز 5 دقايق', clearFocus: 'شيل التركيز',
+      just5: 'بس 5 دقايق. وبس.',
+      start: 'ابدأ', pause: 'وقّف', resume: 'كمّل',
+      todaysCatch: 'مهام اليوم',
+      left: n => `باقي ${n}`, allClear: 'خلّصت الكل ☀',
+      emptyList: 'ما فيه شي الحين 🌱',
+      breakDown: '＋ قسّمها خطوات', steps: '▸ الخطوات', hideSteps: '▾ إخفاء',
+      addStep: 'أضف خطوة صغيرة…',
+      today: 'اليوم', historyTab: 'السجل', historyTitle: 'السجل',
+      doneCount: n => `${n} مكتملة`,
+      histEmpty: 'ما فيه شي محفوظ بعد — المهام المخلّصة تجيك هنا بعد أسبوع من إنجازها. 🗓️',
+      greet: { morning: 'صباح الخير', afternoon: 'نهارك سعيد', evening: 'مساء الخير', night: 'سهرة هادئة' },
+      praise: ["حلو! هذي البداية 🎉","خلّصتها! كمّل 🌟","شي أقل 💪","عاش، سويتها ✨","يلا اللي بعده 🚀","صدتها! 🦋"],
+      histDay: ts => new Date(ts).toLocaleDateString('ar-SA', { weekday: 'short', month: 'short', day: 'numeric' }),
+      langBtn: 'EN'
+    }
+  };
+  let lang = 'en';
+  const L = () => I18N[lang];
+  const t = (k) => L()[k];
+  let skyBucket = 'afternoon', skyGjp = 'こんにちは';
 
   const WEEK = 7 * 24 * 60 * 60 * 1000;  // done tasks archive to History after this
   let state = load();
@@ -412,8 +465,8 @@
         if (!Array.isArray(t.subs)) t.subs = [];
         if (t.done && !t.completedAt) t.completedAt = Date.now();  // start its week now
       });
-      return { tasks: raw.tasks, focusId: raw.focusId ?? null, muted: !!raw.muted };
-    } catch { return { tasks: [], focusId: null, muted: false }; }
+      return { tasks: raw.tasks, focusId: raw.focusId ?? null, muted: !!raw.muted, lang: raw.lang === 'ar' ? 'ar' : 'en' };
+    } catch { return { tasks: [], focusId: null, muted: false, lang: 'en' }; }
   }
   function archived(t) { return t.done && t.completedAt && (Date.now() - t.completedAt >= WEEK); }
   function save() { localStorage.setItem('momentum', JSON.stringify(state)); }
@@ -459,7 +512,8 @@
 
   function celebrate() {
     const toast = $('toast');
-    toast.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+    const praise = L().praise;
+    toast.textContent = praise[Math.floor(Math.random() * praise.length)];
     toast.classList.add('show');
     clearTimeout(celebrate._t);
     celebrate._t = setTimeout(() => toast.classList.remove('show'), 1800);
@@ -528,7 +582,7 @@
     return `<div class="subs">${rows}
       <div class="subadd">
         <span class="plus">+</span>
-        <input type="text" dir="auto" data-subadd="${t.id}" placeholder="add a small step…" autocomplete="off" ${focusVal ? 'data-focusme="1"' : ''} />
+        <input type="text" dir="auto" data-subadd="${t.id}" placeholder="${L().addStep}" autocomplete="off" ${focusVal ? 'data-focusme="1"' : ''} />
       </div>
     </div>`;
   }
@@ -546,12 +600,12 @@
           ${subsHTML(focus, false)}
         </div>
         <div class="now-actions">
-          <button class="btn primary" data-done="${focus.id}">✓ Done</button>
-          <button class="btn" id="focusTimerBtn">⏱ Focus 5 min</button>
-          <button class="btn" data-unfocus="1">Clear focus</button>
+          <button class="btn primary" data-done="${focus.id}">${L().done}</button>
+          <button class="btn" id="focusTimerBtn">${L().focus5}</button>
+          <button class="btn" data-unfocus="1">${L().clearFocus}</button>
         </div>`;
     } else {
-      nc.innerHTML = `<div class="now-empty">No focus task yet — tap the ☆ on any task to bring it up here.</div>`;
+      nc.innerHTML = `<div class="now-empty">${L().noFocus}</div>`;
       $('timer').classList.remove('show');
       resetTimer();
     }
@@ -568,8 +622,8 @@
       const stepsBtn = t.done ? '' : (
         nSubs
           ? `<span class="chip">${nDone}/${nSubs}</span>
-             <button class="steps-btn" data-expand="${t.id}">${isOpen ? '▾ hide' : '▸ steps'}</button>`
-          : `<button class="steps-btn" data-expand="${t.id}">＋ break it down</button>`
+             <button class="steps-btn" data-expand="${t.id}">${isOpen ? L().hideSteps : L().steps}</button>`
+          : `<button class="steps-btn" data-expand="${t.id}">${L().breakDown}</button>`
       );
       li.className = 'task' + (t.done ? ' done' : '') + (t.id === state.focusId ? ' focused' : '');
       li.innerHTML = `
@@ -584,7 +638,7 @@
       list.appendChild(li);
     });
 
-    $('count').textContent = active.length ? `${active.length} left` : 'all clear ☀';
+    $('count').textContent = active.length ? L().left(active.length) : L().allClear;
     const homeTasks = active.length + recentDone.length;
     $('emptyList').style.display = homeTasks ? 'none' : 'block';
 
@@ -597,7 +651,7 @@
     hl.innerHTML = '';
     let lastDay = '';
     done.forEach(t => {
-      const day = new Date(t.completedAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      const day = L().histDay(t.completedAt);
       if (day !== lastDay) {
         lastDay = day;
         const h = document.createElement('div');
@@ -614,7 +668,7 @@
         <button class="icon-btn del" data-del="${t.id}" title="Remove">✕</button>`;
       hl.appendChild(row);
     });
-    $('histCount').textContent = done.length ? `${done.length} done` : '';
+    $('histCount').textContent = done.length ? L().doneCount(done.length) : '';
     $('histEmpty').style.display = done.length ? 'none' : 'block';
   }
 
@@ -623,10 +677,10 @@
   // ---- Timer ----
   let timerSec = 300, timerRunning = false, timerInt = null;
   function fmt(s) { return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0'); }
-  function resetTimer() { clearInterval(timerInt); timerRunning = false; timerSec = 300; const tt = $('timerTime'); if (tt) tt.textContent = fmt(timerSec); const tg = $('timerToggle'); if (tg) tg.textContent = 'Start'; }
+  function resetTimer() { clearInterval(timerInt); timerRunning = false; timerSec = 300; const tt = $('timerTime'); if (tt) tt.textContent = fmt(timerSec); const tg = $('timerToggle'); if (tg) tg.textContent = t('start'); }
   function toggleTimer() {
-    if (timerRunning) { clearInterval(timerInt); timerRunning = false; $('timerToggle').textContent = 'Resume'; return; }
-    timerRunning = true; $('timerToggle').textContent = 'Pause';
+    if (timerRunning) { clearInterval(timerInt); timerRunning = false; $('timerToggle').textContent = t('resume'); return; }
+    timerRunning = true; $('timerToggle').textContent = t('pause');
     timerInt = setInterval(() => {
       timerSec--; $('timerTime').textContent = fmt(timerSec);
       if (timerSec <= 0) { clearInterval(timerInt); timerRunning = false; celebrate(); resetTimer(); }
@@ -638,7 +692,7 @@
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { addTask(input.value); input.value = ''; } });
 
   document.body.addEventListener('click', e => {
-    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-goto],#focusTimerBtn,#timerToggle,#soundToggle');
+    const el = e.target.closest('[data-toggle],[data-del],[data-focus],[data-done],[data-unfocus],[data-expand],[data-subtoggle],[data-subdel],[data-goto],#focusTimerBtn,#timerToggle,#soundToggle,#langToggle');
     if (!el) return;
     const d = el.dataset;
     if (d.toggle) toggle(d.toggle);
@@ -653,6 +707,7 @@
     else if (el.id === 'focusTimerBtn') $('timer').classList.add('show');
     else if (el.id === 'timerToggle') toggleTimer();
     else if (el.id === 'soundToggle') toggleMute();
+    else if (el.id === 'langToggle') toggleLang();
   });
 
   // add a step with Enter (keeps focus in the same field)
@@ -683,39 +738,62 @@
 
   function setSky() {
     const h = new Date().getHours();
-    let time, art, kana, en, gjp, tag;
+    let art, kana, gjp, tag;
 
     if (h < 5 || h >= 20) {
-      time = 'night';  kana = 'よる';  en = 'Winding down.'; gjp = 'こんばんは'; tag = 'よふかし注意';
+      skyBucket = 'night';  kana = 'よる';  gjp = 'こんばんは'; tag = 'よふかし注意';
       const moon = `<defs><mask id="m"><rect width="1200" height="138" fill="#fff"/><circle cx="175" cy="46" r="30" fill="#000"/></mask></defs>
         <circle cx="150" cy="54" r="33" fill="#fdf3d0" mask="url(#m)"/>`;
       art = moon + star(430,44,1.1) + star(560,78,.8) + star(690,40,1.3) + star(820,66,.9) + star(960,36,1) + star(1080,80,1.1)
           + cloud(1120, 108, 1, '#2b356a', .8);
     } else if (h < 11) {
-      time = 'morning'; kana = 'あさ'; en = 'Good morning.'; gjp = 'おはよう'; tag = 'あさのきぶん';
+      skyBucket = 'morning'; kana = 'あさ'; gjp = 'おはよう'; tag = 'あさのきぶん';
       art = sun(150, 96, 40, '#ffcf6a', '#fff0c0') + cloud(560, 52, 1, '#ffffff', .96) + cloud(1080, 96, .9, '#ffffff', .85);
     } else if (h < 17) {
-      time = 'afternoon'; kana = 'はれ'; en = 'Good afternoon.'; gjp = 'こんにちは'; tag = 'なつやすみ気分';
+      skyBucket = 'afternoon'; kana = 'はれ'; gjp = 'こんにちは'; tag = 'なつやすみ気分';
       art = sun(140, 58, 40, '#ffd451', '#ffe89a') + cloud(540, 48, 1, '#ffffff', .97) + cloud(950, 92, 1, '#ffffff', .9) + cloud(1160, 40, .8, '#ffffff', .85);
     } else {
-      time = 'evening'; kana = 'ゆうがた'; en = 'Good evening.'; gjp = 'こんばんは'; tag = 'ゆうやけ小やけ';
+      skyBucket = 'evening'; kana = 'ゆうがた'; gjp = 'こんばんは'; tag = 'ゆうやけ小やけ';
       art = sun(1030, 96, 46, '#ff7e4d', '#ffb27a') + cloud(300, 52, 1, '#ffe0c4', .95) + cloud(720, 90, .9, '#f7cdb2', .8);
     }
 
-    document.body.dataset.time = time;
+    skyGjp = gjp;
+    document.body.dataset.time = skyBucket;
     $('skyArt').innerHTML = art;
     $('skyKana').textContent = kana;
     $('tagJp').textContent = tag;
-    $('greeting').innerHTML = `${en} <span class="kana">${gjp}</span>`;
+    updateGreeting();
+  }
+
+  function updateGreeting() {
+    $('greeting').innerHTML = `${esc(L().greet[skyBucket])} <span class="kana">${skyGjp}</span>`;
+  }
+
+  function applyLang() {
+    lang = state.lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+    $('langToggle').textContent = t('langBtn');
+    if (!timerRunning) { const tg = $('timerToggle'); if (tg) tg.textContent = t('start'); }
+    updateGreeting();
+    render();
+  }
+
+  function toggleLang() {
+    state.lang = (lang === 'ar') ? 'en' : 'ar';
+    save();
+    applyLang();
   }
 
   // ---- Init ----
   document.body.dataset.view = 'now';
   if (state.muted) { const b = $('soundToggle'); b.textContent = '🔇'; b.classList.add('off'); }
-  setSky();
-  setInterval(setSky, 60000);       // keep the sky in sync with the clock
+  setSky();                          // sets skyBucket + decorative art
+  applyLang();                       // sets language, direction, all text, then renders
+  setInterval(setSky, 60000);        // keep the sky in sync with the clock
   setInterval(renderHistory, 60000); // roll finished tasks into History as the week passes
-  render();
   input.focus();
 </script>
 </body>
