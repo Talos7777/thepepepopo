@@ -404,6 +404,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; animation-iteration-count: 1 !important; }
+    /* keep the gentle logo float — it's slow and subtle */
+    .wordmark img { animation-duration: 4.5s !important; animation-iteration-count: infinite !important; }
   }
 
   /* touch devices can't hover — keep row actions visible */
