@@ -330,8 +330,18 @@
     transition: background .15s, opacity .15s;
   }
   .soundtoggle:hover { background: var(--cream); }
-  .soundtoggle.off { opacity: .45; }
   #langToggle { font-family: var(--font); font-weight: 800; font-size: 15px; color: var(--ink-soft); }
+  #soundToggle .ico {
+    display: block; width: 21px; height: 21px;
+    background-color: var(--ink-soft);
+    -webkit-mask: url('sound-on.png') center / contain no-repeat;
+    mask: url('sound-on.png') center / contain no-repeat;
+  }
+  #soundToggle.muted .ico {
+    -webkit-mask-image: url('sound-off.png');
+    mask-image: url('sound-off.png');
+  }
+  #soundToggle.muted { opacity: .6; }
 
   /* ---------- Celebrate toast ---------- */
   .toast {
@@ -485,7 +495,7 @@
     <button class="tab active" data-goto="now"><span data-i18n="today">Today</span></button>
     <button class="tab" data-goto="history"><span data-i18n="historyTab">History</span></button>
     <button class="soundtoggle" id="langToggle" title="Language · اللغة" aria-label="Switch language">ع</button>
-    <button class="soundtoggle" id="soundToggle" title="Sound on/off" aria-label="Toggle sound">🔊</button>
+    <button class="soundtoggle" id="soundToggle" title="Sound on/off" aria-label="Toggle sound"><span class="ico"></span></button>
   </nav>
 
   <div class="toast" id="toast">Nice. That's momentum. 🎉</div>
@@ -774,9 +784,7 @@
   }
   function toggleMute() {
     state.muted = !state.muted;
-    const b = $('soundToggle');
-    b.textContent = state.muted ? '🔇' : '🔊';
-    b.classList.toggle('off', state.muted);
+    $('soundToggle').classList.toggle('muted', state.muted);
     save();
     if (!state.muted) chime();   // little preview when turning it back on
   }
@@ -1065,7 +1073,7 @@
 
   // ---- Init ----
   document.body.dataset.view = 'now';
-  if (state.muted) { const b = $('soundToggle'); b.textContent = '🔇'; b.classList.add('off'); }
+  $('soundToggle').classList.toggle('muted', state.muted);
   setSky();                          // sets skyBucket + decorative art
   applyLang();                       // sets language, direction, all text, then renders
   setInterval(setSky, 60000);        // keep the sky in sync with the clock
