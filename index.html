@@ -10,7 +10,7 @@
 <!-- iOS home-screen app -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="عوافي" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%235cb2e6'/%3E%3Ccircle cx='13' cy='14' r='6.5' fill='%23fdd451'/%3E%3Cellipse cx='21' cy='22' rx='7' ry='3.4' fill='%23fff'/%3E%3C/svg%3E" />
@@ -70,7 +70,8 @@
     /* full-bleed, direction-agnostic (works in LTR and RTL) */
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
-    height: 138px;
+    /* fill the top safe area (iPhone notch/status bar) too */
+    min-height: calc(146px + env(safe-area-inset-top, 0px));
     overflow: hidden;
     transition: background .6s ease;
   }
@@ -80,7 +81,7 @@
   body[data-time="night"]     .sky { background: linear-gradient(#141d3f, #353f74); }
   .sky svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .sky-kana {
-    position: absolute; top: 12px; right: 20px;
+    position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 20px;
     writing-mode: vertical-rl;
     font-family: var(--font); font-weight: 800;
     font-size: 24px; letter-spacing: 3px;
@@ -108,7 +109,8 @@
     box-shadow: 0 2px 0 var(--coral-deep);
   }
   .wordmark {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -52%);
+    position: absolute; top: calc(50% + env(safe-area-inset-top, 0px) / 2); left: 50%;
+    transform: translate(-50%, -52%);
     z-index: 2; margin: 0; line-height: 0; pointer-events: none;
   }
   .wordmark img {
@@ -314,7 +316,7 @@
 
   /* ---------- Bottom tab bar ---------- */
   .tabbar {
-    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    position: fixed; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%);
     display: flex; align-items: center; gap: 6px; z-index: 20;
     background: var(--paper); border: 2.5px solid var(--ink);
     border-radius: 999px; padding: 6px;
