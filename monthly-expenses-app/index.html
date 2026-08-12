@@ -277,7 +277,7 @@ h1 .hf{color:var(--yellow)}
   </section>
 
   <div class="foot">
-    <button class="btn cyan" id="loadSheet">Load example</button>
+    <button class="btn cyan" id="downloadReport">⤓ Download report</button>
     <button class="btn danger" id="clearMonth">Clear month</button>
   </div>
 
@@ -298,21 +298,6 @@ h1 .hf{color:var(--yellow)}
 const CUR = "SAR";
 const KEY = "martini-expenses-v1";
 const DB  = "martini-expenses-db";
-
-/* The August figures from the sheet — kept only as a one-tap example, NOT real data. */
-const EXAMPLE = {
-  salary:18795, houseDebt:3818, ccDebt:1300, savings:1500,
-  items:[
-    {item:"Gym PT",           amount:2850, note:"na"},
-    {item:"Gym monthly",      amount:400,  note:"na"},
-    {item:"entertainment",    amount:390,  note:"Shein gym clothes"},
-    {item:"entertainment",    amount:31,   note:"Coffe"},
-    {item:"Meds",             amount:1300, note:"na"},
-    {item:"Phone bill",       amount:400,  note:"na"},
-    {item:"Education savings", amount:1500, note:"na"},
-    {item:"Room",             amount:3000, note:"Bed"},
-  ]
-};
 
 /* ---------- calendar helpers (read the device clock; the source of truth) ---------- */
 const MONTHS=["January","February","March","April","May","June","July","August",
@@ -565,10 +550,82 @@ function renderAll(){
   renderMonths(); renderRows(); recompute(); renderHistory();
 }
 
-document.getElementById("loadSheet").addEventListener("click",()=>{
-  if(!confirm("Load the example figures into “"+state.active+"”? This overwrites what’s in this month.")) return;
-  state.months[state.active]=keepMeta(JSON.parse(JSON.stringify(EXAMPLE))); save(); renderAll();
-});
+/* ---------- download a report of the current month as a document (.doc) ---------- */
+function reportHTML(name){
+  const m=cur(name);
+  const label=(state.labels.houseDebt||"House Debt").trim()||"House Debt";
+  const salary=Number(m.salary)||0, fixed=Number(m.houseDebt)||0, cc=Number(m.ccDebt)||0, sav=Number(m.savings)||0;
+  const actual=salary-fixed-sav;
+  const items=m.items.filter(it=>(it.item&&it.item.trim())||Number(it.amount));
+  const spent=items.reduce((s,it)=>s+(Number(it.amount)||0),0);
+  const remain=actual-spent;
+  const money=n=>CUR+" "+fmt(n);
+  let when=""; try{ when=new Date().toLocaleString(); }catch(e){}
+  const cell="border:1px solid #141210;padding:7px 11px;font-size:13px;";
+  const cellR=cell+"text-align:right;white-space:nowrap;";
+  const irow=(k,v,hi)=>`<tr${hi?' bgcolor="#eef2ff"':''}><td style="${cell}${hi?'font-weight:bold;':''}">${k}</td><td style="${cellR}${hi?'font-weight:bold;':''}">${v}</td></tr>`;
+  const xrows = items.length
+    ? items.map(it=>`<tr><td style="${cell}">${esc(it.item||"—")}</td><td style="${cellR}">${money(Number(it.amount)||0)}</td><td style="${cell}">${esc(it.note||"")}</td></tr>`).join("")
+    : `<tr><td style="${cell}" colspan="3"><i>No expenses recorded this month.</i></td></tr>`;
+  const remColor = remain<0 ? "#d02c15" : "#1f52d8";
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>Expenses ${esc(name)}</title></head>
+<body style="font-family:Arial,Helvetica,sans-serif;color:#141210;margin:24px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <tr><td bgcolor="#1f52d8" style="background:#1f52d8;padding:18px 20px;border:2px solid #141210;">
+      <div style="font-size:26px;font-weight:bold;color:#ffce1f;letter-spacing:1px;">MONTHLY EXPENSES</div>
+      <div style="font-size:14px;color:#ffffff;margin-top:5px;">${esc(name)} &nbsp;&middot;&nbsp; kakeibo report</div>
+    </td></tr>
+  </table>
+  <p style="font-size:11px;color:#666666;margin:8px 0 20px;">Generated ${esc(when)} &middot; currency ${CUR}. Figures rounded for display.</p>
+
+  <h2 style="font-size:15px;margin:0 0 8px;color:#1f52d8;">Income &amp; Fixed</h2>
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:22px;">
+    ${irow("Salary", money(salary))}
+    ${irow(esc(label), money(fixed))}
+    ${irow("Credit-card debt (monthly)", money(cc))}
+    ${irow("Savings", money(sav))}
+    ${irow("Actual &nbsp;<span style='font-weight:normal;color:#666'>(Salary &minus; "+esc(label)+" &minus; Savings)</span>", money(actual), true)}
+  </table>
+
+  <h2 style="font-size:15px;margin:0 0 8px;color:#ee3b23;">Expenses</h2>
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:22px;">
+    <tr bgcolor="#ee3b23" style="background:#ee3b23;color:#ffffff;">
+      <td style="${cell}color:#ffffff;font-weight:bold;">Item</td>
+      <td style="${cellR}color:#ffffff;font-weight:bold;">Amount</td>
+      <td style="${cell}color:#ffffff;font-weight:bold;">Explain yourself</td>
+    </tr>
+    ${xrows}
+    <tr bgcolor="#f4edda"><td style="${cell}font-weight:bold;">Total spent</td><td style="${cellR}font-weight:bold;">${money(spent)}</td><td style="${cell}"></td></tr>
+  </table>
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <tr>
+      <td width="50%" bgcolor="#ee3b23" style="background:#ee3b23;border:2px solid #141210;padding:14px 16px;">
+        <div style="font-size:12px;color:#ffffff;letter-spacing:1px;">TOTAL SPENT</div>
+        <div style="font-size:24px;font-weight:bold;color:#ffce1f;">${money(spent)}</div>
+      </td>
+      <td width="50%" bgcolor="${remColor}" style="background:${remColor};border:2px solid #141210;padding:14px 16px;">
+        <div style="font-size:12px;color:#ffffff;letter-spacing:1px;">REMAINING</div>
+        <div style="font-size:24px;font-weight:bold;color:#ffce1f;">${money(remain)}</div>
+      </td>
+    </tr>
+  </table>
+
+  <p style="font-size:10px;color:#999999;margin-top:22px;">Monthly Expenses &middot; Kakeibo &mdash; personal budget report.</p>
+</body></html>`;
+}
+function downloadReport(){
+  const name=state.active;
+  const blob=new Blob(["﻿", reportHTML(name)], {type:"application/msword"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="Expenses report - "+name.replace(/[^\w \-]+/g,"")+".doc";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 1500);
+}
+document.getElementById("downloadReport").addEventListener("click",downloadReport);
 document.getElementById("clearMonth").addEventListener("click",()=>{
   if(!confirm("Clear all figures for “"+state.active+"”?")) return;
   state.months[state.active]=keepMeta(blankMonth(state.active)); save(); renderAll();
