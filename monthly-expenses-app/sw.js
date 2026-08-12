@@ -1,5 +1,5 @@
 /* Bump CACHE whenever the app changes so old copies are cleared. */
-const CACHE = "martini-expenses-v2";
+const CACHE = "martini-expenses-v3";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest"];
 
 self.addEventListener("install", e => {

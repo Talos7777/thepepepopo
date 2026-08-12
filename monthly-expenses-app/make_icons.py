@@ -1,40 +1,42 @@
 from PIL import Image, ImageDraw
 
-CREAM=(243,231,201); NAVY=(23,32,94); RED=(229,31,27); CYAN=(52,180,228); BLUE=(74,107,214)
+PAPER=(233,224,203); BLUE=(31,82,216); RED=(238,59,35); YELLOW=(255,206,31)
+GREEN=(14,122,74); INK=(20,18,16)
 
 def icon(size, maskable=False):
     S=1024
-    img=Image.new("RGB",(S,S),NAVY)
+    img=Image.new("RGB",(S,S),BLUE)
     d=ImageDraw.Draw(img)
-    # safe inset for content (bigger margin for maskable so nothing gets cropped by iOS mask)
-    m=int(S*(0.16 if maskable else 0.085))
-    # cream panel with navy frame
-    d.rectangle([m,m,S-m,S-m],fill=CREAM)
-    fr=int(S*0.028)
-    d.rectangle([m,m,S-m,S-m],outline=NAVY,width=fr)
-    inner_l=m+fr; inner_r=S-m-fr; inner_t=m+fr; inner_b=S-m-fr
-    w=inner_r-inner_l
-    # three Martini stripes down the right side
-    sx=inner_r-int(w*0.30)
-    bw=int(w*0.05); gap=int(w*0.028)
-    for i,c in enumerate((CYAN,BLUE,RED)):
-        x=sx+i*(bw+gap)
-        d.rectangle([x,inner_t,x+bw,inner_b],fill=c)
-    # big red roundel (the "coin")
-    cx=inner_l+int(w*0.34); cy=(inner_t+inner_b)//2; r=int(w*0.26)
-    d.ellipse([cx-r,cy-r,cx+r,cy+r],fill=RED)
-    d.ellipse([cx-r,cy-r,cx+r,cy+r],outline=CREAM,width=int(S*0.02))
-    # cream bar across the roundel (reads as a coin slot / minimal mark)
-    bh=int(r*0.34)
-    d.rectangle([cx-int(r*0.5),cy-bh//2,cx+int(r*0.5),cy+bh//2],fill=CREAM)
-    # checkered strip along the bottom of the panel
-    cs=int(w*0.055); ry=inner_b-cs*2
-    n=(inner_r-inner_l)//cs
-    for col in range(n):
-        for row in range(2):
-            if (col+row)%2==0:
-                x0=inner_l+col*cs; y0=ry+row*cs
-                d.rectangle([x0,y0,x0+cs,y0+cs],fill=NAVY)
+    pad=int(S*(0.18 if maskable else 0.0))
+    fr=int(S*0.055)
+    # rounded black-keyline frame with blue field
+    d.rounded_rectangle([pad,pad,S-pad,S-pad],radius=int(S*0.14),fill=BLUE,outline=INK,width=fr)
+    cx=int(S*0.47); cy=int(S*0.53); R=int((S-2*pad)*0.30)
+    lw=int(S*0.022)
+    # stacked yellow globe behind (offset down-right)
+    off=int(R*0.24)
+    d.ellipse([cx-R+off,cy-R+off,cx+R+off,cy+R+off],fill=YELLOW,outline=INK,width=lw)
+    # red globe front
+    d.ellipse([cx-R,cy-R,cx+R,cy+R],fill=RED,outline=INK,width=lw)
+    # grid: meridians (vertical ellipses) + latitudes (horizontal lines) clipped to the globe
+    globe=Image.new("RGBA",(S,S),(0,0,0,0)); gd=ImageDraw.Draw(globe)
+    for rx in (int(R*0.34), int(R*0.68)):
+        gd.ellipse([cx-rx,cy-R,cx+rx,cy+R],outline=INK,width=lw)
+    gd.line([cx,cy-R,cx,cy+R],fill=INK,width=lw)
+    gd.line([cx-R,cy,cx+R,cy],fill=INK,width=lw)
+    for fy in (0.5,):
+        yy=int(R*fy); import math
+        xx=int(R*math.cos(math.asin(fy)))
+        gd.line([cx-xx,cy-yy,cx+xx,cy-yy],fill=INK,width=lw)
+        gd.line([cx-xx,cy+yy,cx+xx,cy+yy],fill=INK,width=lw)
+    mask=Image.new("L",(S,S),0); ImageDraw.Draw(mask).ellipse([cx-R,cy-R,cx+R,cy+R],fill=255)
+    img.paste(globe,(0,0),Image.composite(globe,Image.new("RGBA",(S,S),(0,0,0,0)),mask).split()[3])
+    # yellow sparkle top-right
+    sx=int(S*0.74); sy=int(S*0.28); s=int(S*0.085)
+    star=[(sx,sy-s),(sx+s*0.28,sy-s*0.28),(sx+s,sy),(sx+s*0.28,sy+s*0.28),
+          (sx,sy+s),(sx-s*0.28,sy+s*0.28),(sx-s,sy),(sx-s*0.28,sy-s*0.28)]
+    d.polygon(star,fill=YELLOW,outline=INK)
+    d.line(star+[star[0]],fill=INK,width=int(S*0.012),joint="curve")
     return img.resize((size,size),Image.LANCZOS)
 
 icon(512).save("icon-512.png")

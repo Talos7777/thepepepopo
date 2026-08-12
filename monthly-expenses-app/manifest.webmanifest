@@ -1,13 +1,13 @@
 {
-  "name": "Monthly Expenses · Martini Edition",
-  "short_name": "Expenses",
-  "description": "A monthly budget tracker in Lancia-Martini racing colours.",
+  "name": "Monthly Expenses · Kakeibo",
+  "short_name": "Kakeibo",
+  "description": "A monthly budget tracker in retro Japanese pop-art colours.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f3e7c9",
-  "theme_color": "#17205e",
+  "background_color": "#e9e0cb",
+  "theme_color": "#1f52d8",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
