@@ -1,7 +1,7 @@
 {
-  "name": "Monthly Expenses · Kakeibo",
-  "short_name": "Kakeibo",
-  "description": "A monthly budget tracker in retro Japanese pop-art colours.",
+  "name": "MoneyWhere?",
+  "short_name": "MoneyWhere?",
+  "description": "MoneyWhere? — a monthly budget tracker in retro Japanese pop-art colours.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

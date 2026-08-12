@@ -1,15 +1,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1f52d8">
-<title>Monthly Expenses · Kakeibo</title>
-<meta name="description" content="A simple monthly budget tracker — kakeibo in retro pop-art colours. Your figures stay private on your device.">
+<title>MoneyWhere? — monthly expenses</title>
+<meta name="description" content="MoneyWhere? — a simple monthly budget tracker in retro pop-art colours. Your figures stay private on your device.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kakeibo">
+<meta name="apple-mobile-web-app-title" content="MoneyWhere?">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Bungee&family=Reggae+One&family=Yellowtail&display=swap" rel="stylesheet">
@@ -205,7 +205,7 @@ h1 .hf{color:var(--yellow)}
         <button class="iconbtn" id="renMonth" title="Rename month">✎</button>
       </div>
     </div>
-    <h1 class="disp">MONTHLY<br><span class="hf">EXPENSES</span></h1>
+    <h1 class="disp">MONEY<br><span class="hf">WHERE?</span></h1>
     <p class="tagline" id="tagline">“What I spent on this month as a cow!” — track the salary, kill the debt, watch the remainder.</p>
   </header>
 
@@ -586,8 +586,8 @@ function reportHTML(name){
 <body style="font-family:Arial,Helvetica,sans-serif;color:#141210;margin:24px;">
   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
     <tr><td bgcolor="#1f52d8" style="background:#1f52d8;padding:18px 20px;border:2px solid #141210;">
-      <div style="font-size:26px;font-weight:bold;color:#ffce1f;letter-spacing:1px;">MONTHLY EXPENSES</div>
-      <div style="font-size:14px;color:#ffffff;margin-top:5px;">${esc(name)} &nbsp;&middot;&nbsp; kakeibo report</div>
+      <div style="font-size:26px;font-weight:bold;color:#ffce1f;letter-spacing:1px;">MoneyWhere?</div>
+      <div style="font-size:14px;color:#ffffff;margin-top:5px;">${esc(name)} &nbsp;&middot;&nbsp; monthly report</div>
     </td></tr>
   </table>
   <p style="font-size:11px;color:#666666;margin:8px 0 20px;">Generated ${esc(when)} &middot; currency ${CUR}. Figures rounded for display.</p>
@@ -625,7 +625,7 @@ function reportHTML(name){
     </tr>
   </table>
 
-  <p style="font-size:10px;color:#999999;margin-top:22px;">Monthly Expenses &middot; Kakeibo &mdash; personal budget report.</p>
+  <p style="font-size:10px;color:#999999;margin-top:22px;">MoneyWhere? &mdash; personal budget report.</p>
 </body></html>`;
 }
 function downloadReport(){
@@ -650,7 +650,7 @@ function fileDownload(filename, text, type){
 }
 function todayStr(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return "backup"; } }
 document.getElementById("backupBtn").addEventListener("click",()=>{
-  fileDownload("kakeibo-backup-"+todayStr()+".json", JSON.stringify(state,null,2), "application/json");
+  fileDownload("moneywhere-backup-"+todayStr()+".json", JSON.stringify(state,null,2), "application/json");
 });
 document.getElementById("restoreBtn").addEventListener("click",()=>document.getElementById("restoreFile").click());
 document.getElementById("restoreFile").addEventListener("change",e=>{
@@ -664,7 +664,7 @@ document.getElementById("restoreFile").addEventListener("change",e=>{
       state=s; if(!state.active) state.active=Object.keys(state.months)[0];
       migrate(); ensureCurrentMonth(); save(); renderAll();
       alert("Backup restored — "+Object.keys(state.months).length+" month(s) loaded.");
-    }catch(err){ alert("That doesn't look like a valid Kakeibo backup file."); }
+    }catch(err){ alert("That doesn't look like a valid MoneyWhere? backup file."); }
     e.target.value="";
   };
   reader.readAsText(file);
