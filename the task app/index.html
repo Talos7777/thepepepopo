@@ -595,7 +595,33 @@
     } catch { return { tasks: [], focusId: null, muted: false, lang: 'en' }; }
   }
   function archived(t) { return t.done && t.completedAt && (Date.now() - t.completedAt >= WEEK); }
-  function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
+  function save() {
+    const json = JSON.stringify(state);
+    try { localStorage.setItem(STORE, json); } catch (e) { /* ignore quota/denied */ }
+    idbPut(json);   // second on-device copy (survives some iOS localStorage wipes)
+  }
+
+  // ---- IndexedDB mirror: a backup store iOS often keeps even when it clears localStorage ----
+  function idbOpen() {
+    return new Promise((res, rej) => {
+      try {
+        const rq = indexedDB.open('afiyah-db', 1);
+        rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+        rq.onsuccess = () => res(rq.result);
+        rq.onerror = () => rej(rq.error);
+      } catch (e) { rej(e); }
+    });
+  }
+  function idbPut(json) {
+    idbOpen().then((db) => { db.transaction('kv', 'readwrite').objectStore('kv').put(json, 'state'); }).catch(() => {});
+  }
+  function idbGet() {
+    return idbOpen().then((db) => new Promise((res) => {
+      const r = db.transaction('kv', 'readonly').objectStore('kv').get('state');
+      r.onsuccess = () => res(r.result || null);
+      r.onerror = () => res(null);
+    })).catch(() => null);
+  }
   function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function find(id) { return state.tasks.find(t => t.id === id); }
 
@@ -1095,6 +1121,26 @@
   setInterval(setSky, 60000);        // keep the sky in sync with the clock
   setInterval(renderHistory, 60000); // roll finished tasks into History as the week passes
   input.focus();
+
+  // Safety net: if our tasks were wiped (e.g. iOS cleared localStorage on a full
+  // close) but the IndexedDB backup survived, restore them automatically.
+  if (state.tasks.length === 0) {
+    idbGet().then((json) => {
+      if (!json) return;
+      try {
+        const data = JSON.parse(json);
+        if (!Array.isArray(data.tasks) || !data.tasks.length) return;
+        data.tasks.forEach((t) => { if (!Array.isArray(t.subs)) t.subs = []; });
+        state.tasks = data.tasks;
+        state.focusId = data.focusId ?? null;
+        if (typeof data.muted === 'boolean') state.muted = data.muted;
+        if (data.lang === 'ar' || data.lang === 'en') state.lang = data.lang;
+        try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {}
+        $('soundToggle').classList.toggle('muted', state.muted);
+        applyLang();   // re-renders everything with the recovered tasks
+      } catch (e) {}
+    });
+  }
 
   // Register service worker for offline / installable app (HTTPS only)
   if ('serviceWorker' in navigator) {
