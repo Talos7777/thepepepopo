@@ -2,6 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1f52d8">
 <title>Monthly Expenses · Kakeibo</title>
+<meta name="description" content="A simple monthly budget tracker — kakeibo in retro pop-art colours. Your figures stay private on your device.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
@@ -108,7 +109,7 @@ h1 .hf{color:var(--yellow)}
 .erow > *{padding:0}
 .cell{display:flex;align-items:center;border-left:2.5px solid var(--ink)}
 .cell:first-child{border-left:0}
-.erow input{width:100%;border:0;background:transparent;padding:12px;font-family:"Archivo",sans-serif;font-weight:700;color:var(--ink);outline:none;font-size:15px}
+.erow input{width:100%;border:0;background:transparent;padding:12px;font-family:"Archivo",sans-serif;font-weight:700;color:var(--ink);outline:none;font-size:16px}
 .erow input.amt{font-family:"Archivo",sans-serif;font-weight:900;font-size:19px}
 .erow input::placeholder{color:rgba(20,18,16,.38);font-weight:600}
 .cell.amt-cell{position:relative}
@@ -147,6 +148,13 @@ h1 .hf{color:var(--yellow)}
 .btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
 .btn.danger{background:var(--red);color:var(--paper-2)}
 .btn.cyan{background:var(--yellow);color:var(--ink)}
+.foot-2{margin-top:12px;gap:8px}
+.linkbtn{background:transparent;border:0;color:var(--blue-2);font-family:"Archivo",sans-serif;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;padding:4px 2px;text-decoration:underline;text-underline-offset:3px}
+.linkbtn:hover{color:var(--red)}
+.foot-2 .dot{opacity:.45}
+
+/* visible focus ring for keyboard users (touch/mouse focus stays clean) */
+.wrap input:focus-visible,.wrap select:focus-visible,.wrap button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radius:6px}
 
 /* ---------- history ---------- */
 .history{display:flex;flex-direction:column;gap:12px}
@@ -184,8 +192,7 @@ h1 .hf{color:var(--yellow)}
 
   <!-- ============ HERO ============ -->
   <header class="hero panel">
-    <svg class="spark" style="top:96px;right:22px;width:30px;height:30px;z-index:1" viewBox="0 0 100 100"><path d="M50 2 L59 41 L98 50 L59 59 L50 98 L41 59 L2 50 L41 41 Z" fill="#ffce1f" stroke="#141210" stroke-width="4" stroke-linejoin="round"/></svg>
-    <svg class="spark" style="bottom:16px;right:96px;width:18px;height:18px;z-index:1" viewBox="0 0 100 100"><path d="M50 2 L59 41 L98 50 L59 59 L50 98 L41 59 L2 50 L41 41 Z" fill="#ffce1f" stroke="#141210" stroke-width="5" stroke-linejoin="round"/></svg>
+    <svg class="spark" style="top:92px;right:20px;width:30px;height:30px;z-index:1" viewBox="0 0 100 100"><path d="M50 2 L59 41 L98 50 L59 59 L50 98 L41 59 L2 50 L41 41 Z" fill="#ffce1f" stroke="#141210" stroke-width="4" stroke-linejoin="round"/></svg>
     <div class="hero-top">
       <div class="brand">
         <span class="script">my</span>
@@ -279,6 +286,12 @@ h1 .hf{color:var(--yellow)}
   <div class="foot">
     <button class="btn cyan" id="downloadReport">⤓ Download report</button>
     <button class="btn danger" id="clearMonth">Clear month</button>
+  </div>
+  <div class="foot foot-2">
+    <button class="linkbtn" id="backupBtn">⭳ Back up all data</button>
+    <span class="dot">·</span>
+    <button class="linkbtn" id="restoreBtn">Restore from backup</button>
+    <input type="file" id="restoreFile" accept="application/json,.json" hidden>
   </div>
 
   <!-- ============ HISTORY ============ -->
@@ -626,6 +639,36 @@ function downloadReport(){
   setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 1500);
 }
 document.getElementById("downloadReport").addEventListener("click",downloadReport);
+
+/* ---------- back up / restore ALL data (device migration + disaster recovery) ---------- */
+function fileDownload(filename, text, type){
+  const blob=new Blob([text],{type:type||"application/octet-stream"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 1500);
+}
+function todayStr(){ try{ return new Date().toISOString().slice(0,10); }catch(e){ return "backup"; } }
+document.getElementById("backupBtn").addEventListener("click",()=>{
+  fileDownload("kakeibo-backup-"+todayStr()+".json", JSON.stringify(state,null,2), "application/json");
+});
+document.getElementById("restoreBtn").addEventListener("click",()=>document.getElementById("restoreFile").click());
+document.getElementById("restoreFile").addEventListener("change",e=>{
+  const file=e.target.files && e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const s=JSON.parse(reader.result);
+      if(!s || typeof s!=="object" || !s.months || typeof s.months!=="object" || !Object.keys(s.months).length) throw 0;
+      if(!confirm("Replace ALL current data with this backup? Everything on this device will be overwritten.")){ e.target.value=""; return; }
+      state=s; if(!state.active) state.active=Object.keys(state.months)[0];
+      migrate(); ensureCurrentMonth(); save(); renderAll();
+      alert("Backup restored — "+Object.keys(state.months).length+" month(s) loaded.");
+    }catch(err){ alert("That doesn't look like a valid Kakeibo backup file."); }
+    e.target.value="";
+  };
+  reader.readAsText(file);
+});
 document.getElementById("clearMonth").addEventListener("click",()=>{
   if(!confirm("Clear all figures for “"+state.active+"”?")) return;
   state.months[state.active]=keepMeta(blankMonth(state.active)); save(); renderAll();
