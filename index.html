@@ -177,7 +177,8 @@
     margin-bottom: 34px;
     overflow: hidden;
   }
-  .now-card .wave { position: absolute; top: 0; left: 0; right: 0; height: 14px; display: block; }
+  .now-card .wave { position: absolute; top: 0; left: 0; width: 200%; height: 14px; display: block; animation: wave-flow 7s linear infinite; }
+  @keyframes wave-flow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   .now-title { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.25; margin: 8px 0 14px; }
   .now-empty { color: var(--ink-soft); font-size: 15px; text-align: center; padding: 10px 4px; }
   .now-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
@@ -406,8 +407,9 @@
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; animation-iteration-count: 1 !important; }
-    /* keep the gentle logo float — it's slow and subtle */
+    /* keep the gentle logo float + wave flow — slow, subtle, decorative */
     .wordmark img { animation-duration: 4.5s !important; animation-iteration-count: infinite !important; }
+    .now-card .wave { animation-duration: 7s !important; animation-iteration-count: infinite !important; }
   }
 
   /* touch devices can't hover — keep row actions visible */
@@ -446,8 +448,8 @@
       <span class="jp">いま、これ</span>
     </div>
     <div class="now-card">
-      <svg class="wave" viewBox="0 0 640 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0,8 C60,0 100,14 160,8 C220,2 260,14 320,8 C380,2 420,14 480,8 C540,2 580,14 640,8 L640,0 L0,0 Z" fill="#ef5b43"/>
+      <svg class="wave" viewBox="0 0 1280 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M0,8 C60,0 100,14 160,8 C220,0 260,14 320,8 C380,0 420,14 480,8 C540,0 580,14 640,8 C700,0 740,14 800,8 C860,0 900,14 960,8 C1020,0 1060,14 1120,8 C1180,0 1220,14 1280,8 L1280,0 L0,0 Z" fill="#ef5b43"/>
       </svg>
       <div id="nowContent">
         <div class="now-empty">No focus task yet — tap the ☆ on any task to bring it up here.</div>
