@@ -55,10 +55,11 @@ body{
 h1{margin:16px 0 0;font-size:clamp(40px,12.5vw,82px);color:var(--paper-2);font-family:"Bungee",Impact,sans-serif;text-transform:uppercase;line-height:.98;-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink)}
 h1 .hf{color:var(--yellow)}
 .tagline{margin:16px 0 0;color:var(--paper-2);font-weight:700;font-size:13px;max-width:64%;position:relative;z-index:2}
-.month-chip{background:var(--yellow);color:var(--ink);border:2.5px solid var(--ink);border-radius:12px;padding:5px 6px;display:flex;align-items:center;gap:1px;box-shadow:var(--hard-sm);z-index:3;flex:0 0 auto}
-.month-chip .mlabel{font-family:"Bungee",sans-serif;font-size:8px;letter-spacing:.03em;padding:0 3px;opacity:.7}
-.month-chip select{appearance:none;background:transparent;border:0;color:var(--ink);font-family:"Bungee",sans-serif;font-size:13px;text-transform:uppercase;padding:0 2px;cursor:pointer;max-width:118px}
-.month-chip select option{color:var(--ink)}
+.month-chip{background:var(--yellow);color:var(--ink);border:2.5px solid var(--ink);border-radius:12px;padding:5px 8px;display:flex;align-items:center;gap:6px;box-shadow:var(--hard-sm);z-index:3;flex:0 0 auto}
+.month-chip .msel{position:relative;display:inline-flex;align-items:center}
+.month-chip .msel::after{content:"▾";position:absolute;right:3px;font-size:10px;pointer-events:none}
+.month-chip select{appearance:none;-webkit-appearance:none;background:transparent;border:0;color:var(--ink);font-family:"Bungee",sans-serif;font-size:13px;text-transform:uppercase;padding:0 15px 0 2px;cursor:pointer}
+.month-chip select option{color:var(--ink);text-transform:none}
 .iconbtn{background:transparent;border:0;color:var(--ink);cursor:pointer;font-size:14px;line-height:1;padding:3px 4px;border-radius:6px}
 .iconbtn:hover{background:rgba(0,0,0,.12)}
 
@@ -199,10 +200,8 @@ h1 .hf{color:var(--yellow)}
         <span class="jp" style="font-size:15px;background:var(--red);color:var(--paper-2);border:2.5px solid var(--ink);border-radius:10px;padding:3px 10px 5px;box-shadow:var(--hard-sm)" title="kakeibo — household budget book">カケイボ</span>
       </div>
       <div class="month-chip">
-        <span class="mlabel">MONTH</span>
-        <select id="monthSel" aria-label="Select month"></select>
-        <button class="iconbtn" id="addMonth" title="New month">＋</button>
-        <button class="iconbtn" id="renMonth" title="Rename month">✎</button>
+        <span class="msel"><select id="monthSel" aria-label="Month"></select></span>
+        <span class="msel"><select id="yearSel" aria-label="Year"></select></span>
       </div>
     </div>
     <h1 class="disp">MONEY<br><span class="hf">WHERE?</span></h1>
@@ -429,28 +428,43 @@ const fmt = n => (Number(n)||0).toLocaleString("en-US",{maximumFractionDigits:2}
 
 /* ---------- month selector ---------- */
 const monthSel = document.getElementById("monthSel");
-function renderMonths(){
-  monthSel.innerHTML = "";
-  sortedMonthNames().forEach(m=>{
-    const o=document.createElement("option"); o.value=m; o.textContent=m;
-    if(m===state.active) o.selected=true; monthSel.appendChild(o);
+const yearSel  = document.getElementById("yearSel");
+
+/* the calendar month/year the active bucket represents */
+function activeYM(){
+  const m=cur(state.active);
+  if(m && m.ym!=null) return m.ym;
+  const fromLabel=ymFromLabel(state.active);
+  return fromLabel!=null ? fromLabel : ymOf(now());
+}
+/* fill the two dropdowns and select the active month/year */
+function populatePickers(){
+  const ym=activeYM(), selM=ym%100, selY=Math.floor(ym/100);
+  monthSel.innerHTML="";
+  MONTHS.forEach((name,i)=>{
+    const o=document.createElement("option"); o.value=String(i+1); o.textContent=name;
+    if(i+1===selM) o.selected=true; monthSel.appendChild(o);
+  });
+  const nowY=now().getFullYear(), years=new Set();
+  for(let y=nowY-4;y<=nowY+1;y++) years.add(y);                 // sensible window…
+  Object.keys(state.months).forEach(k=>{ const v=monthSortVal(k); if(v>0) years.add(Math.floor(v/100)); }); // …plus any year you have data in
+  years.add(selY);
+  yearSel.innerHTML="";
+  [...years].sort((a,b)=>a-b).forEach(y=>{
+    const o=document.createElement("option"); o.value=String(y); o.textContent=String(y);
+    if(y===selY) o.selected=true; yearSel.appendChild(o);
   });
 }
-monthSel.addEventListener("change",()=>{ state.active=monthSel.value; save(); renderAll(); });
-document.getElementById("addMonth").addEventListener("click",()=>{
-  const name=(prompt("Name of the new month? (e.g. September 2026)","")||"").trim();
-  if(!name) return;
-  if(state.months[name]){ alert("That month already exists."); return; }
-  state.months[name]=blankMonth(name); state.active=name; save(); renderAll();
-});
-document.getElementById("renMonth").addEventListener("click",()=>{
-  const old=state.active; const name=(prompt("Rename month:",old)||"").trim();
-  if(!name||name===old) return;
-  if(state.months[name]){ alert("That month already exists."); return; }
-  const m=state.months[old];
-  const ym=ymFromLabel(name); if(ym!=null) m.ym=ym;   // keep calendar tracking in sync
-  state.months[name]=m; delete state.months[old]; state.active=name; save(); renderAll();
-});
+/* jump to the chosen month/year, creating the bucket if it's new */
+function gotoPicked(){
+  const mi=parseInt(monthSel.value,10), yr=parseInt(yearSel.value,10);
+  if(!mi||!yr) return;
+  const label=MONTHS[mi-1]+" "+yr;
+  if(!state.months[label]) state.months[label]=blankMonth(label);
+  state.active=label; save(); renderAll();
+}
+monthSel.addEventListener("change",gotoPicked);
+yearSel.addEventListener("change",gotoPicked);
 
 /* ---------- editable fixed-cost label (Rent / Bank debt / …) ---------- */
 const houseLabelEl=document.getElementById("houseDebtLabel");
@@ -560,7 +574,7 @@ function renderAll(){
   fields.forEach(f=>document.getElementById(f).value = (m[f]===0||m[f]==null)?"":m[f]);
   houseLabelEl.value = state.labels.houseDebt==="House Debt" ? "" : (state.labels.houseDebt||"");
   updateFormula();
-  renderMonths(); renderRows(); recompute(); renderHistory();
+  populatePickers(); renderRows(); recompute(); renderHistory();
 }
 
 /* ---------- download a report of the current month as a document (.doc) ---------- */
