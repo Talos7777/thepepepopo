@@ -25,10 +25,17 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Upload the app folder as the site
+      - name: Assemble site (task app at root, expenses app at /expenses)
+        run: |
+          mkdir -p _site
+          cp -r "the task app/." _site/
+          mkdir -p _site/expenses
+          cp -r "monthly-expenses-app/." _site/expenses/
+          rm -f _site/expenses/make_icons.py
+      - name: Upload the assembled site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'the task app'
+          path: '_site'
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
