@@ -222,8 +222,10 @@
     border: 2px solid var(--line);
     border-radius: 14px;
     padding: 13px 15px; margin-bottom: 10px;
-    transition: border-color .2s, opacity .3s;
+    box-shadow: 0 3px 0 rgba(58,70,83,.06);
+    transition: border-color .2s, box-shadow .2s, transform .15s, opacity .3s;
   }
+  .task:hover { box-shadow: 0 4px 0 rgba(58,70,83,.10); }
   .task.focused { border-color: var(--sky); box-shadow: 0 3px 0 rgba(108,189,236,.35); }
   .task-row { display: flex; align-items: center; gap: 13px; }
   .check {
@@ -293,6 +295,9 @@
   .subadd input:focus { border-bottom-color: var(--sky); }
 
   .empty-list { text-align: center; color: var(--ink-soft); padding: 28px 0; font-size: 15px; font-weight: 500; }
+  .empty-catch { text-align: center; padding: 20px 0 30px; }
+  .catch-art { width: 138px; height: auto; display: block; margin: 0 auto 8px; }
+  .empty-msg { color: var(--ink-soft); font-size: 15px; font-weight: 500; margin: 0; }
 
   /* ---------- Views (Today / History) ---------- */
   #historyView { display: none; }
@@ -474,8 +479,26 @@
       <span class="count" id="count"></span>
     </div>
     <ul id="list"></ul>
-    <div class="empty-list" id="emptyList" data-i18n="emptyList" style="display:none">
-      All clear — nothing to catch right now. 🌱
+    <div class="empty-catch" id="emptyList" style="display:none">
+      <svg class="catch-art" viewBox="0 0 150 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- net -->
+        <line x1="36" y1="106" x2="80" y2="52" stroke="#e9a400" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="90" cy="44" rx="26" ry="21" fill="#fffdf6" stroke="#9aa4b0" stroke-width="5"/>
+        <path d="M69 40 q21 24 42 0" stroke="#d3dae1" stroke-width="2.5" fill="none"/>
+        <path d="M76 33 q14 30 28 0" stroke="#d3dae1" stroke-width="2.5" fill="none"/>
+        <!-- butterfly flying free -->
+        <g transform="translate(38,36) rotate(-8)">
+          <ellipse cx="-7" cy="-5" rx="8" ry="10" fill="#ef5b43" transform="rotate(-22 -7 -5)"/>
+          <ellipse cx="7" cy="-5" rx="8" ry="10" fill="#f4a98a" transform="rotate(22 7 -5)"/>
+          <ellipse cx="-6" cy="8" rx="5.5" ry="7" fill="#f4a98a" transform="rotate(-12 -6 8)"/>
+          <ellipse cx="6" cy="8" rx="5.5" ry="7" fill="#ef5b43" transform="rotate(12 6 8)"/>
+          <rect x="-1.4" y="-9" width="2.8" height="20" rx="1.4" fill="#3a4653"/>
+        </g>
+        <!-- little flight path + sparkle -->
+        <path d="M52 30 q10 -10 22 -8" stroke="#cbd2da" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" fill="none"/>
+        <path d="M120 18 l1.7 4.6 4.6 1.7 -4.6 1.7 -1.7 4.6 -1.7 -4.6 -4.6 -1.7 4.6 -1.7 z" fill="#f8c53c"/>
+      </svg>
+      <p class="empty-msg" data-i18n="emptyList">All clear — nothing to catch right now. 🌱</p>
     </div>
     </div><!-- /homeView -->
 
