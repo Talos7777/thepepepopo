@@ -446,7 +446,7 @@ function populatePickers(){
     if(i+1===selM) o.selected=true; monthSel.appendChild(o);
   });
   const nowY=now().getFullYear(), years=new Set();
-  for(let y=nowY-4;y<=nowY+1;y++) years.add(y);                 // sensible window…
+  for(let y=nowY;y<=nowY+4;y++) years.add(y);                   // current year → +4 (e.g. 2026–2030)
   Object.keys(state.months).forEach(k=>{ const v=monthSortVal(k); if(v>0) years.add(Math.floor(v/100)); }); // …plus any year you have data in
   years.add(selY);
   yearSel.innerHTML="";
